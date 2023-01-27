@@ -1,0 +1,20 @@
+require 'minitest/autorun'
+require_relative './test_helper'
+
+require 'ruby_drive'
+require 'm68k'
+require 'rom'
+require 'decoder'
+
+describe 'integration' do
+  let(:two_nops) { [0x4E, 0x71, 0x4E, 0x71] }
+
+  it 'loads and executes NOPs' do
+    rd = RubyDrive.new(M68k.new(Rom.new(two_nops), Decoder.new))
+
+    assert_raises(BusError) do
+      rd.run
+    end
+    assert_equal 4, rd.m68k.pc
+  end
+end
