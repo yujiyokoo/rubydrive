@@ -1,11 +1,13 @@
 class M68k
   attr_accessor :pc
+  attr_accessor :sp
   attr_accessor :memory
   attr_accessor :decoder
   attr_accessor :running
 
   def initialize(memory, decoder)
-    @pc = 0
+    @sp = memory.contents[0..3].pack("cccc").unpack("N")[0]
+    @pc = memory.contents[4..7].pack("cccc").unpack("N")[0]
     @memory = memory
     @decoder = decoder
     @running = false

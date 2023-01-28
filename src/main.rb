@@ -11,7 +11,12 @@ require 'pp'
 
 puts "starting rubydrive..."
 
-memory = Rom.new([0x4E, 0x71, 0xFF, 0xFF])
+rom_file = open(ARGV[0], 'rb') do |binfile|
+  bin = binfile.read
+  ary = bin.unpack('c*')
+end
+
+memory = Rom.new(rom_file)
 decoder = Decoder.new
 
 RubyDrive.new(M68k.new(memory, decoder)).run
