@@ -25,9 +25,9 @@ class Decoder
         next_word = memory.get_word(pc + S_1WORD)
         [Instruction::MOVE_TO_SR.new(next_word), S_2WORD]
       in [0x4a, Integer] # TST (or TAS)
-        if (lower & 0xC0) >> 6 == 0b10 && (lower & 0x38) >> 3 == 0b111 && (lower & 0x07) == 0b100
+        if (lower & 0xC0) >> 6 == 0b10 && (lower & 0x38) >> 3 == 0b111 && (lower & 0x07) == 0b001
           next_long_word = memory.get_long_word(pc + S_1WORD)
-          [Instruction::TST.new(Target::Immediate.new(next_long_word), LONGWORD_SIZE), S_3WORD]
+          [Instruction::TST.new(Target::Absolute.new(next_long_word), LONGWORD_SIZE), S_3WORD]
         else
           [:unknown, S_1WORD]
         end
