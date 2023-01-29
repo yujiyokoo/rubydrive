@@ -10,6 +10,12 @@ describe Rom do
     end
   end
 
+  describe '#size' do
+    it 'reports rom size' do
+      assert_equal 4, Rom.new([1, 2, 3, 4]).size
+    end
+  end
+
   describe '#get_byte' do
     it 'gets the byte from location' do
       assert_equal 0x03, Rom.new([1, 2, 3, 4]).get_byte(2)

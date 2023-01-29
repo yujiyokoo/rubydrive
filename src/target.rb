@@ -1,4 +1,4 @@
 class Target
-  class Absolute < Struct.new('Immadiate', :data)
+  class Absolute < Struct.new('Absolute', :address)
   end
 end

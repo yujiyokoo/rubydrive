@@ -9,8 +9,8 @@ class M68k
   attr_accessor :running
 
   def initialize(memory, decoder)
-    @sp = memory.contents[0..3].pack("cccc").unpack("N")[0]
-    @pc = memory.contents[4..7].pack("cccc").unpack("N")[0]
+    @sp = memory.initial_sp
+    @pc = memory.initial_pc
     @sr = 0
     @memory = memory
     @decoder = decoder
@@ -30,15 +30,48 @@ class M68k
   def execute(instruction)
     debugpr(instruction.class.name)
     case instruction.class.name # TODO: better way to identify class?
-      when 'Instruction::NOP'
-        nil # don't do anything as it's a NOP
-      when 'Instruction::MOVE_TO_SR'
-        @sr = (0xFF & instruction.value) # Copy only the lower word to SR
+    when 'Instruction::NOP'
+      nil # don't do anything as it's a NOP
+    when 'Instruction::MOVE_TO_SR'
+      @sr = (0xFF & instruction.value) # Copy only the lower word to SR
+    when 'Instruction::TST'
+      value = read_target(instruction, memory)
+      @sr = sr | 0x04 if value == 0
+      @sr = sr | 0x08 if negative?(value, instruction.size)
+      @sr = sr & 0x0C
+    else
+      raise UnsupportedInstruction
+    end
+  end
+
+  # TODO: move somewhere?
+  def negative?(value, size)
+    if size != LONGWORD_SIZE
+      raise UnsupportedInstruction
+    else
+      (value & 0xFFFFFFFF) >> 31 == 0b1
+    end
+  end
+
+  def read_target(instruction, memory)
+    # let's support absolute address first
+    case instruction.target.class.name
+    when 'Target::Absolute' # TODO: better way to identify class?
+      if instruction.size == LONGWORD_SIZE
+        #puts "instruction: #{instruction}"
+        #puts "long word: #{memory.get_long_word(instruction.target.address)}"
+        memory.get_long_word(instruction.target.address)
       else
-        raise UnsupportedInstruction
+        raise UnsupportedTarget("Unsupported absolute target size")
+      end
+    else
+      raise UnsupportedTarget("Unsupported target type")
     end
   end
 end
 
 class UnsupportedInstruction < Exception
+end
+
+class UnsupportedTarget < Exception
 end
