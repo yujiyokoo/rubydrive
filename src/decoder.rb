@@ -1,3 +1,5 @@
+require 'instruction'
+
 class Decoder
   LONGWORD_SIZE = 4
   WORD_SIZE = 2
@@ -10,13 +12,18 @@ class Decoder
     #  operation to be performed"
     word = memory.get_word(pc)
 
-    instruction = case word
-      when 0x4E71
-        :nop
+    instruction, adv = case word
+      when 0x4E71 # NOP
+        [Instruction::NOP.new, WORD_SIZE]
+      when 0x46FC # move a (16bit) word to status register
+        # Here we've matched entire long word but if you only match the upper word,
+        # you'd need something like `if (next_word & 0x00C0) >> 6 == 0x11`
+        next_word = memory.get_word(pc + WORD_SIZE)
+        [Instruction::MOVE.new(:sr, next_word, WORD_SIZE), LONGWORD_SIZE]
       else
-        :unknown
+        [:unknown, WORD_SIZE]
     end
     # for now, we advance by a word because we only support NOP
-    [instruction, WORD_SIZE]
+    [instruction, adv]
   end
 end

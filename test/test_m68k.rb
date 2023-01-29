@@ -27,7 +27,7 @@ describe M68k do
   describe '#next_instruction' do
     it 'returns the content at PC' do
       # 0x4E71 is NOP
-      assert_equal :nop, M68k.new(memory, decoder).next_instruction
+      assert_equal Instruction::NOP.new, M68k.new(memory, decoder).next_instruction
     end
 
     it 'advances the PC by instruction size' do

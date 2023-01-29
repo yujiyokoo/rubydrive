@@ -1,6 +1,8 @@
 require 'rom'
 require 'm68k'
 require 'decoder'
+require 'instruction'
+require 'debug'
 
 class RubyDrive
   attr_accessor :m68k
@@ -11,8 +13,8 @@ class RubyDrive
   def step
     instruction = m68k.next_instruction
 
-    if instruction == :nop
-      puts "found a NOP!"
+    if instruction.is_a?(Instruction::NOP)
+      # puts "found a NOP!"
     end
     instruction
   end
@@ -21,6 +23,7 @@ class RubyDrive
     m68k.running = true
     while m68k.running?
       instruction = step
+      puts "instruction: #{instruction}"
       m68k.execute(instruction)
     end
   end

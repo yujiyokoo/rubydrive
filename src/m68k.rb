@@ -1,3 +1,5 @@
+require 'instruction'
+
 class M68k
   attr_accessor :pc
   attr_accessor :sp
@@ -24,8 +26,8 @@ class M68k
   end
 
   def execute(instruction)
-    case instruction
-      when :nop
+    case instruction.class.name # TODO: better way to identify class?
+      when 'Instruction::NOP'
         # don't do anything as it's a NOP
       else
         raise UnsupportedInstruction
