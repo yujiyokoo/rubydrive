@@ -11,13 +11,15 @@ class Decoder
     #  specifies the length of the instruction, the effective addressing mode, and the
     #  operation to be performed"
     word = memory.get_word(pc)
+    upper = word >> 8
+    lower = word & 0xFF
 
     debugpr "looking at instruction word at #{pc.to_s(16)}: #{word.to_s(16)}"
 
-    instruction, adv = case word
-      when 0x4E71 # NOP
+    instruction, adv = case [upper, lower]
+      in [0x4E, 0x71] # NOP
         [Instruction::NOP.new, WORD_SIZE]
-      when 0x46FC # move a (16bit) word to status register
+      in [0x46, 0xFC] # move a (16bit) word to status register
         # Here we've matched entire long word but if you only match the upper word,
         # you'd need something like `if (next_word & 0x00C0) >> 6 == 0x11`
         next_word = memory.get_word(pc + WORD_SIZE)
