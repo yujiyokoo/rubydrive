@@ -4,6 +4,7 @@ require_relative './test_helper'
 require 'm68k'
 require 'rom'
 require 'decoder'
+require 'instruction'
 
 describe M68k do
   let(:rom_contents) { [0xff, 0xff, 0x00, 0xfe, 0x00, 0x00, 0x00, 0x08, 0x4E, 0x71] }
@@ -39,5 +40,20 @@ describe M68k do
   end
 
   describe '#execute' do
+    describe 'NOP' do
+      it 'does not cause unsupported instruction error' do
+        m68k = M68k.new(memory, decoder)
+        assert_nil m68k.execute(Instruction::NOP.new)
+      end
+    end
+
+    describe 'others' do
+      it 'causes unsupported instruction error' do
+        m68k = M68k.new(memory, decoder)
+        assert_raises(UnsupportedInstruction) do
+          m68k.execute(nil)
+        end
+      end
+    end
   end
 end

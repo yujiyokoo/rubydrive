@@ -28,7 +28,7 @@ class M68k
   def execute(instruction)
     case instruction.class.name # TODO: better way to identify class?
       when 'Instruction::NOP'
-        # don't do anything as it's a NOP
+        nil # don't do anything as it's a NOP
       else
         raise UnsupportedInstruction
     end
