@@ -1,9 +1,9 @@
 require 'instruction'
 
 class Decoder
-  LONGWORD_SIZE = 4
-  WORD_SIZE = 2
-  BYTE_SIZE = 1
+  S_3WORD = 6
+  S_2WORD = 4
+  S_1WORD = 2
   def get_instruction(memory, pc)
     # According to https://www.nxp.com/files-static/archives/doc/ref_manual/M68000PRM.pdf
     # "instructions consist of at least one word"
@@ -18,16 +18,23 @@ class Decoder
 
     instruction, adv = case [upper, lower]
       in [0x4E, 0x71] # NOP
-        [Instruction::NOP.new, WORD_SIZE]
+        [Instruction::NOP.new, S_1WORD]
       in [0x46, 0xFC] # move a (16bit) word to status register
         # Here we've matched entire long word but if you only match the upper word,
         # you'd need something like `if (next_word & 0x00C0) >> 6 == 0x11`
-        next_word = memory.get_word(pc + WORD_SIZE)
-        [Instruction::MOVE_TO_SR.new(next_word), LONGWORD_SIZE]
+        next_word = memory.get_word(pc + S_1WORD)
+        [Instruction::MOVE_TO_SR.new(next_word), S_2WORD]
+      in [0x4a, Integer] # TST (or TAS)
+        if (lower & 0xC0) >> 6 == 0b10 && (lower & 0x38) >> 3 == 0b111 && (lower & 0x07) == 0b100
+          next_long_word = memory.get_long_word(pc + S_1WORD)
+          [Instruction::TST.new(Target::Immediate.new(next_long_word), LONGWORD_SIZE), S_3WORD]
+        else
+          [:unknown, S_1WORD]
+        end
       else
-        [:unknown, WORD_SIZE]
+        [:unknown, S_1WORD]
     end
-    # for now, we advance by a word because we only support NOP
+
     [instruction, adv]
   end
 end

@@ -15,6 +15,15 @@ class Rom
     raise BusError if contents[addr].nil?
     (contents[addr] << 8) | ((contents[addr+1] & 0xFF))
   end
+
+  def get_long_word(addr)
+    raise AddressError if addr.odd?
+    raise BusError if contents[addr..addr+3].include?(nil?)
+    ((contents[addr] & 0xFF) << 24) |
+     ((contents[addr+1] & 0xFF) << 16) |
+     ((contents[addr+2] & 0xFF) << 8) |
+     ((contents[addr+3] & 0xFF))
+  end
 end
 
 class AddressError < Exception
