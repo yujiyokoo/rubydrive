@@ -3,7 +3,7 @@ class Instruction
   WORD_SIZE = 2
   BYTE_SIZE = 1
   
-  class MOVE < Struct.new('MOVE', :destination, :value, :size)
+  class MOVE_TO_SR < Struct.new('MOVE_TO_SR', :value) # destination is SR, size is word
   end
 
   class NOP < Struct.new('NOP')

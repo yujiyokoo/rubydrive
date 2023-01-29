@@ -1,8 +1,9 @@
 require 'instruction'
 
 class M68k
-  attr_accessor :pc
-  attr_accessor :sp
+  attr_accessor :pc # Program Counter
+  attr_accessor :sp # Stack Pointer
+  attr_accessor :sr # Status Register
   attr_accessor :memory
   attr_accessor :decoder
   attr_accessor :running
@@ -10,6 +11,7 @@ class M68k
   def initialize(memory, decoder)
     @sp = memory.contents[0..3].pack("cccc").unpack("N")[0]
     @pc = memory.contents[4..7].pack("cccc").unpack("N")[0]
+    @sr = 0
     @memory = memory
     @decoder = decoder
     @running = false
@@ -26,9 +28,12 @@ class M68k
   end
 
   def execute(instruction)
+    debugpr(instruction.class.name)
     case instruction.class.name # TODO: better way to identify class?
       when 'Instruction::NOP'
         nil # don't do anything as it's a NOP
+      when 'Instruction::MOVE_TO_SR'
+        @sr = (0xFF & instruction.value) # Copy only the lower word to SR
       else
         raise UnsupportedInstruction
     end

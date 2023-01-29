@@ -9,10 +9,11 @@ class Rom
     contents[addr]
   end
 
+  # TODO: need a more efficient way of storing and getting bytes
   def get_word(addr)
     raise AddressError if addr.odd?
     raise BusError if contents[addr].nil?
-    (contents[addr] << 8) | (contents[addr+1])
+    (contents[addr] << 8) | ((contents[addr+1] & 0xFF))
   end
 end
 

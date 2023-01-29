@@ -40,16 +40,23 @@ describe M68k do
   end
 
   describe '#execute' do
+    let(:m68k) { M68k.new(memory, decoder) }
+
     describe 'NOP' do
       it 'does not cause unsupported instruction error' do
-        m68k = M68k.new(memory, decoder)
         assert_nil m68k.execute(Instruction::NOP.new)
+      end
+    end
+
+    describe 'MOVE_TO_SR' do
+      it 'copies a word to SR' do
+        m68k.execute(Instruction::MOVE_TO_SR.new(0xFECD))
+        assert_equal 0xCD, m68k.sr
       end
     end
 
     describe 'others' do
       it 'causes unsupported instruction error' do
-        m68k = M68k.new(memory, decoder)
         assert_raises(UnsupportedInstruction) do
           m68k.execute(nil)
         end

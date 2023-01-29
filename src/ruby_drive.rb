@@ -2,7 +2,7 @@ require 'rom'
 require 'm68k'
 require 'decoder'
 require 'instruction'
-require 'debug'
+require 'utils'
 
 class RubyDrive
   attr_accessor :m68k
@@ -23,7 +23,7 @@ class RubyDrive
     m68k.running = true
     while m68k.running?
       instruction = step
-      puts "instruction: #{instruction}"
+      debugpr "instruction: #{instruction}"
       m68k.execute(instruction)
     end
   end
