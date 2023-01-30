@@ -8,4 +8,7 @@ class Instruction
 
   class TST < Struct.new('TST', :target, :size)
   end
+
+  class BNE < Struct.new('BNE', :target, :size) # size is SHORT or WORD
+  end
 end

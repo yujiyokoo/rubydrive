@@ -39,6 +39,10 @@ class M68k
       @sr = sr | 0x04 if value == 0
       @sr = sr | 0x08 if negative?(value, instruction.size)
       @sr = sr & 0x0C
+    when 'Instruction::BNE'
+      if sr & 0x04 != 0 # Z is on
+        @pc += read_target(instruction, memory)
+      end
     else
       raise UnsupportedInstruction
     end
@@ -63,6 +67,12 @@ class M68k
         memory.get_long_word(instruction.target.address)
       else
         raise UnsupportedTarget("Unsupported absolute target size")
+      end
+    when 'Target::Displacement'
+      if instruction.size == SHORT_SIZE
+        instruction.target.value
+      else
+        raise UnsupportedTarget("Unsupported displacement target size")
       end
     else
       raise UnsupportedTarget("Unsupported target type")

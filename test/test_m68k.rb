@@ -79,6 +79,18 @@ describe M68k do
       end
     end
 
+    describe 'BNE' do
+      # Note this moves PC by 6 and 'step' moves the PC by 2...
+      # should they be combined into one method?
+      it 'updates PC by 6 for 6066 if Z flag is 1' do
+        m68k.pc = 0
+        m68k.sr = 0x04
+        instruction = Instruction::BNE.new(Target::Displacement.new(0x06), SHORT_SIZE)
+        m68k.execute(instruction)
+        assert_equal 0x06, m68k.pc
+      end
+    end
+
     describe 'others' do
       it 'causes unsupported instruction error' do
         assert_raises(UnsupportedInstruction) do

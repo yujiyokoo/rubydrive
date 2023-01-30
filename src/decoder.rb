@@ -1,5 +1,7 @@
 require 'instruction'
 
+require 'target'
+
 class Decoder
   S_3WORD = 6
   S_2WORD = 4
@@ -31,6 +33,8 @@ class Decoder
         else
           [:unknown, S_1WORD]
         end
+      in [0x66, Integer] # BNE (eventually 0x6 for Bccc?)
+        [Instruction::BNE.new(Target::Displacement.new(lower), SHORT_SIZE), S_1WORD]
       else
         [:unknown, S_1WORD]
     end
