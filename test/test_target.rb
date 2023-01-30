@@ -12,7 +12,7 @@ describe Target do
     end
   end
 
-  describe Target::Displacement do
+  describe Target::AddrDisplacement do
     it 'represents displacement' do
       assert_equal 0x03, Target::Absolute.new(0x03).address
     end

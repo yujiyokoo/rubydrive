@@ -65,16 +65,30 @@ describe M68k do
         assert_equal 0b00, m68k.sr & 0x03
       end
 
-      it 'checks abusolute long word address and sets Z if zero' do
+      it 'checks long word at abusolute long word address and sets Z if zero' do
         m68k.sr = 0
         m68k.execute(Instruction::TST.new(Target::Absolute.new(0x00a10008), LONGWORD_SIZE))
         assert_equal 0b01, (m68k.sr & 0x0C) >> 2 # Z is set, N is not set
       end
 
-      it 'checks abusolute long word address and sets N if negative' do
+      it 'checks long word at abusolute long word address and sets N if negative' do
         m68k.memory = Memory.new(rom: rom, controller_io: ControllerIO.new(0xFFFFFFFF))
         m68k.sr = 0
         m68k.execute(Instruction::TST.new(Target::Absolute.new(0x00a10008), LONGWORD_SIZE))
+        assert_equal 0b10, (m68k.sr & 0x0C) >> 2 # Z is not set, N is set
+      end
+
+      it 'checks word at abusolute long word address and sets Z if zero' do
+        m68k.memory = Memory.new(rom: rom, controller_io: ControllerIO.new(0xFFFF0000))
+        m68k.sr = 0
+        m68k.execute(Instruction::TST.new(Target::Absolute.new(0x00a10008), WORD_SIZE))
+        assert_equal 0b01, (m68k.sr & 0x0C) >> 2 # Z is set, N is not set
+      end
+
+      it 'checks word at abusolute long word address and sets N if negative' do
+        m68k.memory = Memory.new(rom: rom, controller_io: ControllerIO.new(0x0000FFFF))
+        m68k.sr = 0
+        m68k.execute(Instruction::TST.new(Target::Absolute.new(0x00a10008), WORD_SIZE))
         assert_equal 0b10, (m68k.sr & 0x0C) >> 2 # Z is not set, N is set
       end
     end
@@ -85,7 +99,7 @@ describe M68k do
       it 'updates PC by 6 for 6066 if Z flag is 1' do
         m68k.pc = 0
         m68k.sr = 0x04
-        instruction = Instruction::BNE.new(Target::Displacement.new(0x06), SHORT_SIZE)
+        instruction = Instruction::BNE.new(Target::AddrDisplacement.new(0x06), SHORT_SIZE)
         m68k.execute(instruction)
         assert_equal 0x06, m68k.pc
       end

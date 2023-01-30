@@ -46,9 +46,3 @@ class Memory
     end
   end
 end
-
-class UnsupportedAddress < Exception
-end
-
-class RomSizeTooLarge < Exception
-end

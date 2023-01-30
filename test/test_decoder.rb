@@ -30,13 +30,30 @@ describe Decoder do
       assert_equal 6, mv # advance by word + long-word
     end
 
+    it "returns TST.w, absolute long for 4a 79 00 a1 00 0c" do
+      memory = Rom.new([0x4a, 0x79, 0x00, 0xa1, 0x00, 0x0c])
+      tstl = Instruction::TST.new(Target::Absolute.new(0x00a1000c), WORD_SIZE)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal tstl, instruction
+      assert_equal 6, mv # advance by word + long-word
+    end
+
     # NOTE: the disassembled code seems to go from 20a to 212 when jumping by 6
     # That must be PC is 20c when 6 is added...
     it "returns BNE.s, by 6 for 6606" do
       memory = Rom.new([0x66, 0x06, 0x00, 0x00])
-      expected = Instruction::BNE.new(Target::Displacement.new(0x06), SHORT_SIZE)
-      instruction, _ = decoder.get_instruction(memory, 0)
+      expected = Instruction::BNE.new(Target::AddrDisplacement.new(0x06), SHORT_SIZE)
+      instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
+      assert_equal 2, mv
+    end
+
+    it "returns LEA, PC + PC(displacement), into a5 for 4b fa 00 34" do
+      memory = Rom.new([0x4b, 0xfa, 0x00, 0x34])
+      expected = Instruction::LEA.new(Target::PcDisplacement.new(0x34), :a5)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 4, mv
     end
   end
 end

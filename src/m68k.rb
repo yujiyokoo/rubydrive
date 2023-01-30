@@ -50,10 +50,12 @@ class M68k
 
   # TODO: move somewhere?
   def negative?(value, size)
-    if size != LONGWORD_SIZE
-      raise UnsupportedInstruction
-    else
+    if size == LONGWORD_SIZE
       (value & 0xFFFFFFFF) >> 31 == 0b1
+    elsif size == WORD_SIZE
+      (value & 0xFFFF) >> 15 == 0b1
+    else
+      raise UnsupportedInstruction
     end
   end
 
@@ -62,13 +64,13 @@ class M68k
     case instruction.target.class.name
     when 'Target::Absolute' # TODO: better way to identify class?
       if instruction.size == LONGWORD_SIZE
-        #puts "instruction: #{instruction}"
-        #puts "long word: #{memory.get_long_word(instruction.target.address)}"
         memory.get_long_word(instruction.target.address)
+      elsif instruction.size == WORD_SIZE
+        memory.get_word(instruction.target.address)
       else
         raise UnsupportedTarget("Unsupported absolute target size")
       end
-    when 'Target::Displacement'
+    when 'Target::AddrDisplacement'
       if instruction.size == SHORT_SIZE
         instruction.target.value
       else
@@ -78,10 +80,4 @@ class M68k
       raise UnsupportedTarget("Unsupported target type")
     end
   end
-end
-
-class UnsupportedInstruction < Exception
-end
-
-class UnsupportedTarget < Exception
 end
