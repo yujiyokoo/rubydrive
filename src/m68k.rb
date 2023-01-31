@@ -1,20 +1,31 @@
+require 'utils'
 require 'instruction'
 
 class M68k
+  attr_accessor :registers # a0-a7, d0-d7
   attr_accessor :pc # Program Counter
-  attr_accessor :sp # Stack Pointer
   attr_accessor :sr # Status Register
   attr_accessor :memory
   attr_accessor :decoder
   attr_accessor :running
 
   def initialize(memory, decoder)
-    @sp = memory.initial_sp
+    @registers = {
+      a0: 0, a1: 0, a2: 0, a3: 0, a4: 0, a5: 0, a6: 0, a7: 0,
+      d0: 0, d1: 0, d2: 0, d3: 0, d4: 0, d5: 0, d6: 0, d7: 0,
+    }
+    self.sp = memory.initial_sp
     @pc = memory.initial_pc
     @sr = 0
     @memory = memory
     @decoder = decoder
     @running = false
+  end
+
+  # addres register 7 is also stack pointer
+  def sp = registers[:a7]
+  def sp=(val)
+    registers[:a7] = val
   end
 
   def running?
@@ -40,15 +51,21 @@ class M68k
       @sr = sr | 0x08 if negative?(value, instruction.size)
       @sr = sr & 0x0C
     when 'Instruction::BNE'
-      if sr & 0x04 != 0 # Z is on
+      if z_flag_on?
         @pc += read_target(instruction, memory)
       end
+    when 'Instruction::LEA'
+      raise UnsupportedInstruction unless instruction.target.is_a?(Target::PcDisplacement)
+
+      displacement = read_target(instruction, memory)
+      registers[instruction.destination] = pc + displacement
     else
       raise UnsupportedInstruction
     end
   end
 
-  # TODO: move somewhere?
+  def z_flag_on? = sr & 0x04 != 0
+
   def negative?(value, size)
     if size == LONGWORD_SIZE
       (value & 0xFFFFFFFF) >> 31 == 0b1
@@ -60,7 +77,6 @@ class M68k
   end
 
   def read_target(instruction, memory)
-    # let's support absolute address first
     case instruction.target.class.name
     when 'Target::Absolute' # TODO: better way to identify class?
       if instruction.size == LONGWORD_SIZE
@@ -68,16 +84,18 @@ class M68k
       elsif instruction.size == WORD_SIZE
         memory.get_word(instruction.target.address)
       else
-        raise UnsupportedTarget("Unsupported absolute target size")
+        raise UnsupportedTarget.new("Unsupported absolute target size")
       end
     when 'Target::AddrDisplacement'
       if instruction.size == SHORT_SIZE
         instruction.target.value
       else
-        raise UnsupportedTarget("Unsupported displacement target size")
+        raise UnsupportedTarget.new("Unsupported addr displacement target size")
       end
+    when 'Target::PcDisplacement' # size should always be long word
+      memory.get_long_word(instruction.target.value)
     else
-      raise UnsupportedTarget("Unsupported target type")
+      raise UnsupportedTarget.new("Unsupported target type")
     end
   end
 end

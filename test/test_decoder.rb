@@ -55,5 +55,13 @@ describe Decoder do
       assert_equal expected, instruction
       assert_equal 4, mv
     end
+
+    it "returns LEA, PC + PC(displacement), into a4 for 49 fa 00 34" do
+      memory = Rom.new([0x49, 0xfa, 0x00, 0x34])
+      expected = Instruction::LEA.new(Target::PcDisplacement.new(0x34), :a4)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 4, mv
+    end
   end
 end

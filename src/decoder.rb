@@ -58,12 +58,13 @@ class Decoder
   end
 
   def upper_An(byte)
+    regnames = [:a0, :a1, :a2, :a3, :a4, :a5, :a6, :a7]
     regnum = (byte & 0x0E) >> 1
-    if regnum == 5
-      :a5
-    elsif
-      raise UnsupportedRegister
-    end
+    reg = regnames[regnum]
+
+    raise UnsupportedRegister if reg.nil?
+
+    reg
   end
 
   def is_lea?(byte)
