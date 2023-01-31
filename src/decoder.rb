@@ -21,6 +21,9 @@ class Decoder
     instruction, adv = case
       when [upper, lower] == [0x4E, 0x71] # NOP
         [Instruction::NOP.new, S_1WORD]
+      when [upper, lower] == [0x4E, 0x72]
+        next_word = memory.get_word(pc + S_1WORD)
+        [Instruction::STOP.new(next_word), S_2WORD]
       when [upper, lower] == [0x46, 0xFC] # move a (16bit) word to status register
         # Here we've matched entire long word but if you only match the upper word,
         # you'd need something like `if (next_word & 0x00C0) >> 6 == 0x11`

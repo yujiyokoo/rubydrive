@@ -14,4 +14,7 @@ class Instruction
 
   class LEA < Struct.new('LEA', :target, :destination)
   end
+
+  class STOP < Struct.new('STOP', :value)
+  end
 end

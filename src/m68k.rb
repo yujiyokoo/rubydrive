@@ -59,6 +59,9 @@ class M68k
 
       displacement = read_target(instruction, memory)
       registers[instruction.destination] = pc + displacement
+    when 'Instruction::STOP'
+      @sr = instruction.value
+      self.running = false
     else
       raise UnsupportedInstruction
     end

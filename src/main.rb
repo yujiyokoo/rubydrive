@@ -23,3 +23,4 @@ decoder = Decoder.new
 
 RubyDrive.new(M68k.new(memory, decoder)).run
 
+puts "rubydrive finished"

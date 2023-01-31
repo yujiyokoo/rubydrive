@@ -115,6 +115,17 @@ describe M68k do
       end
     end
 
+    describe 'STOP' do
+      it 'copies the parameter to SR register and stops processor' do
+        m68k.sr = 0x00
+        m68k.running = true
+        instruction = Instruction::STOP.new(0xC4)
+        m68k.execute(instruction)
+        assert_equal 0xC4, m68k.sr
+        assert !m68k.running?
+      end
+    end
+
     describe 'others' do
       it 'causes unsupported instruction error' do
         assert_raises(UnsupportedInstruction) do
