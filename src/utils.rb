@@ -21,3 +21,12 @@ end
 
 class UnsupportedRegister < Exception
 end
+
+class UnsupportedDestination < Exception
+end
+
+class UnsupportedSource < Exception
+end
+
+class InvalidSize < Exception
+end

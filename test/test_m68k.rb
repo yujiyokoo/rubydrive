@@ -60,6 +60,16 @@ describe M68k do
       end
     end
 
+    describe 'MOVE' do
+      let(:memory) { Memory.new(rom: Rom.new([0, 0, 0, 0, 0, 0, 0, 0]), controller_io: ControllerIO.new(0x01234567)) }
+
+      it 'copies a byte only for MOVE.b, absolute, long, data reg' do
+        m68k.registers[:d0] = 0xFFFF
+        m68k.execute(Instruction::MOVE.new(Target::Absolute.new(0x00a10001), Target::Register.new(:d0), BYTE_SIZE))
+        assert_equal 0xFF67, m68k.registers[:d0] # only the lowest byte is copied
+      end
+    end
+
     describe 'TST' do
       it 'sets V and C flags 0' do
         m68k.execute(Instruction::TST.new(Target::Absolute.new(0x00a10008), LONGWORD_SIZE))

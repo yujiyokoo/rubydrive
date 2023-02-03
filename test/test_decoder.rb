@@ -22,6 +22,14 @@ describe Decoder do
       assert_equal 4, mv # advance by long-word size
     end
 
+    it "returns MOVE.b absolute long(00a10001), d0 for 0x103900a10001" do
+      memory = Rom.new([0x10, 0x39, 0x00, 0xa1, 0x00, 0x01])
+      expected = Instruction::MOVE.new(Target::Absolute.new(0x00a10001), Target::Register.new(:d0), BYTE_SIZE)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 6, mv
+    end
+
     it "returns TST.l, absolute long for 4a b9 00 a1 00 08" do
       memory = Rom.new([0x4a, 0xb9, 0x00, 0xa1, 0x00, 0x08])
       tstl = Instruction::TST.new(Target::Absolute.new(0x00a10008), LONGWORD_SIZE)

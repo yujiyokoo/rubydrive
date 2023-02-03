@@ -17,4 +17,7 @@ class Instruction
 
   class STOP < Struct.new('STOP', :value)
   end
+
+  class MOVE < Struct.new('MOVE', :target, :destination, :size)
+  end
 end

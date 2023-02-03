@@ -7,4 +7,7 @@ class Target
 
   class PcDisplacement < Struct.new('PcDisplacement', :value)
   end
+
+  class Register < Struct.new('Register', :name)
+  end
 end

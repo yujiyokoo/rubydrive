@@ -29,6 +29,11 @@ class Decoder
         # you'd need something like `if (next_word & 0x00C0) >> 6 == 0x11`
         next_word = memory.get_word(pc + S_1WORD)
         [Instruction::MOVE_TO_SR.new(next_word), S_2WORD]
+      when (upper >> 4) == 0x10 # MOVE.b
+        dest = upper_ea(word)
+        src, advance_size = lower_ea(word)
+
+        [Instruction::MOVE.new(dest, src), advance_size]
       when upper == 0x4a # TST (or TAS)
         if size_long?(lower) && addressing_absolute_long?(lower)
           next_long_word = memory.get_long_word(pc + S_1WORD)
@@ -39,6 +44,10 @@ class Decoder
         else
           [:unknown, S_1WORD]
         end
+      when (upper & 0xC0) >> 6 == 0 && (upper & 0x30) >> 4 != 0 # MOVE
+        size = get_move_size(upper)
+        source, destination = get_move_source_and_destination(word, memory, pc)
+        [Instruction::MOVE.new(source, destination, size), 2 + S_2WORD] # currently only supporting LONGWORD
       when upper == 0x66 # BNE (eventually 0x6 for Bccc?)
         [Instruction::BNE.new(Target::AddrDisplacement.new(lower), SHORT_SIZE), S_1WORD]
       when is_lea?(upper)
@@ -54,6 +63,48 @@ class Decoder
     end
 
     [instruction, adv]
+  end
+
+  def get_move_source_and_destination(word, memory, pc)
+    dest =get_move_destination((word & 0x0FC0) >> 6)
+    src = get_move_source(word & 0x3F, memory, pc)
+    [src, dest]
+  end
+
+  def get_move_destination(six_bits)
+    # Note this is 'swapped' compared to other 6 bit destinations in lower byte
+    mode = six_bits & 0x7
+    regnum = (six_bits & 0x38) >> 3
+    if mode == 0 # Dn register
+      regnames = [:d0, :d1, :d2, :d3, :d4, :d5, :d6, :d7]
+      Target::Register.new(regnames[regnum])
+    else
+      raise UnsupportedDestination
+    end
+  end
+
+  def get_move_source(six_bits, memory, pc) # TODO: could memory and pc be not passed
+    mode = (six_bits & 0x38) >> 3
+    regnum = six_bits & 0x7
+    if mode == 0x7 && regnum == 0x1 # Absolute long
+      next_long_word = memory.get_long_word(pc + S_1WORD)
+      Target::Absolute.new(next_long_word)
+    else
+      raise UnsupportedSource
+    end
+  end
+
+  def get_move_size(byte)
+    case (byte & 0x30) >> 4
+    when 0b01
+      return BYTE_SIZE
+    when 0b11
+      return WORD_SIZE
+    when 0b10
+      return LONG_WORD_SIZE
+    else
+      raise InvalidSize
+    end
   end
 
   def is_pc_with_displacement?(byte)

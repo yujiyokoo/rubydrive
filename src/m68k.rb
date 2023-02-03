@@ -45,6 +45,11 @@ class M68k
       nil # don't do anything as it's a NOP
     when 'Instruction::MOVE_TO_SR'
       @sr = (0xFF & instruction.value) # Copy only the lower word to SR
+    when 'Instruction::MOVE'
+      raise UnsupportedInstruction if !(instruction.target.is_a?(Target::Absolute) && instruction.size == BYTE_SIZE && instruction.destination.is_a?(Target::Register)) 
+      source_byte = memory.get_byte(instruction.target.address)
+
+      registers[instruction.destination.name] = (registers[instruction.destination.name] & 0xFF00) | source_byte
     when 'Instruction::TST'
       value = read_target(instruction, memory)
       @sr = sr | 0x04 if value == 0
