@@ -4,6 +4,7 @@ require_relative './test_helper'
 
 require 'decoder'
 require 'rom'
+require 'memory'
 
 describe Decoder do
   let(:decoder) { Decoder.new }
@@ -75,6 +76,14 @@ describe Decoder do
     it "returns STOP with WORD for 4e 72 27 00" do
       memory = Rom.new([0x4e, 0x72, 0x27, 0x00])
       expected = Instruction::STOP.new(0x2700)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 4, mv
+    end
+
+    it "returns ANDI.b #15, d0 for 02 00 00 FF" do
+      memory = Memory.new(rom: Rom.new([0x02, 0x00, 0x00, 0x0F]), controller_io: ControllerIO.new(0xFFFFFFFF))
+      expected = Instruction::ANDI.new(Target::Immediate.new(0x0F), Target::Register.new(:d0), BYTE_SIZE)
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
       assert_equal 4, mv

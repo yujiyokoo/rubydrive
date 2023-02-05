@@ -10,4 +10,7 @@ class Target
 
   class Register < Struct.new('Register', :name)
   end
+
+  class Immediate < Struct.new('Immediate', :value)
+  end
 end

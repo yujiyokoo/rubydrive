@@ -20,4 +20,7 @@ class Instruction
 
   class MOVE < Struct.new('MOVE', :target, :destination, :size)
   end
+
+  class ANDI < Struct.new('ANDI', :target, :destination, :size)
+  end
 end

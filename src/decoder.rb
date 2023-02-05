@@ -58,6 +58,11 @@ class Decoder
         else
           [:unknown, S_1WORD]
         end
+      when is_andi?(upper)
+        next_word = memory.get_word(pc + S_1WORD)
+        source = Target::Immediate.new(next_word)
+        dest, size = get_lower_target_and_size(lower & 0x3F, memory, pc)
+        [Instruction::ANDI.new(source, dest, size), S_2WORD]
       else
         [:unknown, S_1WORD]
     end
@@ -65,9 +70,24 @@ class Decoder
     [instruction, adv]
   end
 
+  def is_andi?(upper_byte) = upper_byte = 0x02
+
+  def get_lower_size(lower_byte)
+    case (lower_byte >> 6) & 0x03
+      when 0x00
+        BYTE_SIZE
+      when 0x01
+        WORD_SIZE
+      when 0x10
+        LONG_SIZE
+      else
+        raise UnsupportedSize
+    end
+  end
+
   def get_move_source_and_destination(word, memory, pc)
-    dest =get_move_destination((word & 0x0FC0) >> 6)
-    src = get_move_source(word & 0x3F, memory, pc)
+    dest = get_move_destination((word & 0x0FC0) >> 6)
+    src, _ = get_move_source(word & 0xFF, memory, pc)
     [src, dest]
   end
 
@@ -83,12 +103,21 @@ class Decoder
     end
   end
 
-  def get_move_source(six_bits, memory, pc) # TODO: could memory and pc be not passed
-    mode = (six_bits & 0x38) >> 3
-    regnum = six_bits & 0x7
+  def get_move_source(byte, memory, pc) # TODO: could memory and pc be not passed
+    get_lower_target_and_size(byte, memory, pc)
+  end
+
+  # size may or may not be determined prior to this function
+  def get_lower_target_and_size(byte, memory, pc)
+    size = get_lower_size(byte)
+    mode = (byte & 0x38) >> 3
+    regnum = byte & 0x7
     if mode == 0x7 && regnum == 0x1 # Absolute long
       next_long_word = memory.get_long_word(pc + S_1WORD)
-      Target::Absolute.new(next_long_word)
+      [Target::Absolute.new(next_long_word), LONGWORD_SIZE]
+    elsif mode == 0x00 && regnum = 0x0 # register d0
+      next_word = memory.get_word(pc + S_1WORD)
+      [Target::Register.new(:d0), size]
     else
       raise UnsupportedSource
     end
