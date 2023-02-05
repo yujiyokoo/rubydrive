@@ -146,7 +146,7 @@ class Decoder
     when 0b11
       return WORD_SIZE
     when 0b10
-      return LONG_WORD_SIZE
+      return LONGWORD_SIZE
     else
       raise InvalidSize
     end
