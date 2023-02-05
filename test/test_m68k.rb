@@ -136,6 +136,15 @@ describe M68k do
       end
     end
 
+    describe 'ANDI' do
+      it 'does AND with immediate data and puts the result in the register' do
+        m68k.registers[:d1] = 0xFFF0
+        instruction = Instruction::ANDI.new(Target::Immediate.new(0xAA), Target::Register.new(:d1), BYTE_SIZE)
+        m68k.execute(instruction)
+        assert_equal 0xFFA0, m68k.registers[:d1]
+      end
+    end
+
     describe 'others' do
       it 'causes unsupported instruction error' do
         assert_raises(UnsupportedInstruction) do

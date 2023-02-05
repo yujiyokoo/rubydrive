@@ -67,8 +67,14 @@ class M68k
     when 'Instruction::STOP'
       @sr = instruction.value
       self.running = false
+    when 'Instruction::ANDI'
+      raise UnsupportedInstruction unless instruction.size == BYTE_SIZE
+      raise UnsupportedInstruction unless instruction.target.is_a?(Target::Immediate)
+      raise UnsupportedInstruction unless instruction.destination.is_a?(Target::Register)
+      result = (instruction.target.value & 0xFF) & (registers[instruction.destination.name] & 0xFF)
+      registers[instruction.destination.name] = (registers[instruction.destination.name] & 0xFFFFFF00) | result
     else
-      raise UnsupportedInstruction
+      raise UnsupportedInstruction.new(instruction.class.name)
     end
   end
 
