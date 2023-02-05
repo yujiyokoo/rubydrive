@@ -64,13 +64,13 @@ class Decoder
         dest, size = get_lower_target_and_size(lower & 0x3F, memory, pc)
         [Instruction::ANDI.new(source, dest, size), S_2WORD]
       else
-        [:unknown, S_1WORD]
+        raise UnsupportedInstruction.new("cannot decode '0x#{word.to_s(16)}'")
     end
 
     [instruction, adv]
   end
 
-  def is_andi?(upper_byte) = upper_byte = 0x02
+  def is_andi?(upper_byte) = upper_byte == 0x02
 
   def get_lower_size(lower_byte)
     case (lower_byte >> 6) & 0x03
