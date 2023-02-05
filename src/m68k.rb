@@ -73,6 +73,14 @@ class M68k
       raise UnsupportedInstruction unless instruction.destination.is_a?(Target::Register)
       result = (instruction.target.value & 0xFF) & (registers[instruction.destination.name] & 0xFF)
       registers[instruction.destination.name] = (registers[instruction.destination.name] & 0xFFFFFF00) | result
+      @sr &= 0xFFFFFFFC # set V & C zero
+
+      # setting the N flag
+      n = (result & 0x80) == 0x80 # currently only supporting byte...
+      @sr |= 0x00000004 if n
+
+      z = (result == 0)
+      @sr |= 0x00000008 if z
     else
       raise UnsupportedInstruction.new(instruction.class.name)
     end

@@ -143,6 +143,30 @@ describe M68k do
         m68k.execute(instruction)
         assert_equal 0xFFA0, m68k.registers[:d1]
       end
+
+      it 'sets V and C flags to zero' do
+        m68k.sr = 0xFFFFFFFF
+        m68k.registers[:d1] = 0xFFF0
+        instruction = Instruction::ANDI.new(Target::Immediate.new(0xAA), Target::Register.new(:d1), BYTE_SIZE)
+        m68k.execute(instruction)
+        assert_equal 0, m68k.sr & 0x03
+      end
+
+      it 'sets N if negative' do
+        m68k.sr = 0xFFFFFF00
+        m68k.registers[:d1] = 0xFFFF
+        instruction = Instruction::ANDI.new(Target::Immediate.new(0xAA), Target::Register.new(:d1), BYTE_SIZE)
+        m68k.execute(instruction)
+        assert_equal 0x04, m68k.sr & 0x0F
+      end
+
+      it 'sets Z if zero' do
+        m68k.sr = 0xFFFFFF00
+        m68k.registers[:d1] = 0x0000
+        instruction = Instruction::ANDI.new(Target::Immediate.new(0xAA), Target::Register.new(:d1), BYTE_SIZE)
+        m68k.execute(instruction)
+        assert_equal 0x08, m68k.sr & 0x0F
+      end
     end
 
     describe 'others' do
