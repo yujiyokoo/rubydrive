@@ -48,8 +48,24 @@ class Decoder
         size = get_move_size(upper)
         source, destination = get_move_source_and_destination(word, memory, pc)
         [Instruction::MOVE.new(source, destination, size), 2 + S_2WORD] # currently only supporting LONGWORD
-      when upper == 0x66 # BNE (eventually 0x6 for Bccc?)
-        [Instruction::BNE.new(Target::AddrDisplacement.new(lower), SHORT_SIZE), S_1WORD]
+      when upper & 0xF0 == 0x60
+        # BRA, BSR, Bcc
+        if [0xF0, 0xF1].include?(upper & 0xFF == 0xF0) # BRA or BSR
+          raise UnsupportedInstruction.new("BRA or BSR not supported yet")
+        end
+        displacement, size, mv = if lower == 0 # word displacement
+          [memory.get_word(pc + S_1WORD), WORD_SIZE, S_2WORD]
+        else
+          [lower, SHORT_SIZE, S_1WORD]
+        end
+
+        if upper & 0x0F == 0x06 # BNE
+          [Instruction::BNE.new(Target::AddrDisplacement.new(displacement), size), mv]
+        elsif upper & 0x0F == 0x07 # BNE
+          [Instruction::BEQ.new(Target::AddrDisplacement.new(displacement), size), mv]
+        else
+          raise UnsupportedInstruction.new("Bcc 0x#{word.to_s(16)} not supported yet")
+        end
       when is_lea?(upper)
         if is_pc_with_displacement?(lower)
           next_word = memory.get_word(pc + S_1WORD)

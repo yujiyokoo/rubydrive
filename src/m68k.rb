@@ -56,6 +56,10 @@ class M68k
       @sr = sr | 0x08 if negative?(value, instruction.size)
       @sr = sr & 0x0C
     when 'Instruction::BNE'
+      if !z_flag_on?
+        @pc += read_target(instruction, memory)
+      end
+    when 'Instruction::BEQ'
       if z_flag_on?
         @pc += read_target(instruction, memory)
       end

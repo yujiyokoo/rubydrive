@@ -88,5 +88,13 @@ describe Decoder do
       assert_equal expected, instruction
       assert_equal 4, mv
     end
+
+    it "returns BEQ.s Displacement(0a) for 0x670a" do
+      memory = Memory.new(rom: Rom.new([0x67, 0x0a]), controller_io: ControllerIO.new(0xFFFFFFFF))
+      expected = Instruction::BEQ.new(Target::AddrDisplacement.new(0x0a), BYTE_SIZE)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 2, mv
+    end
   end
 end

@@ -9,9 +9,6 @@ class Instruction
   class TST < Struct.new('TST', :target, :size)
   end
 
-  class BNE < Struct.new('BNE', :target, :size) # size is SHORT (byte inside the instruction word) or WORD
-  end
-
   class LEA < Struct.new('LEA', :target, :destination)
   end
 
@@ -22,5 +19,12 @@ class Instruction
   end
 
   class ANDI < Struct.new('ANDI', :target, :destination, :size)
+  end
+
+  # Bcc instructions' size is SHORT (byte inside the instruction word) or WORD
+  class BNE < Struct.new('BNE', :target, :size)
+  end
+
+  class BEQ < Struct.new('BEQ', :target, :size) 
   end
 end

@@ -107,12 +107,22 @@ describe M68k do
     describe 'BNE' do
       # Note this moves PC by 6 and 'step' moves the PC by 2...
       # should they be combined into one method?
-      it 'updates PC by 6 for 6066 if Z flag is 1' do
+      it 'updates PC by 6 for 0x6606 if Z flag is 0' do
         m68k.pc = 2
-        m68k.sr = 0x04
+        m68k.sr = 0x0B
         instruction = Instruction::BNE.new(Target::AddrDisplacement.new(0x06), SHORT_SIZE)
         m68k.execute(instruction)
         assert_equal 0x08, m68k.pc
+      end
+    end
+
+    describe 'BEQ' do
+      it 'updates PC by 0a (for 0x670a) if Z flag is 1' do
+        m68k.pc = 2
+        m68k.sr = 0x04
+        instruction = Instruction::BEQ.new(Target::AddrDisplacement.new(0x0a), SHORT_SIZE)
+        m68k.execute(instruction)
+        assert_equal 0x0C, m68k.pc
       end
     end
 
