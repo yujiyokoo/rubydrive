@@ -29,25 +29,20 @@ class Decoder
         # you'd need something like `if (next_word & 0x00C0) >> 6 == 0x11`
         next_word = memory.get_word(pc + S_1WORD)
         [Instruction::MOVE_TO_SR.new(next_word), S_2WORD]
-      when (upper >> 4) == 0x10 # MOVE.b
-        dest = upper_ea(word)
-        src, advance_size = lower_ea(word)
-
-        [Instruction::MOVE.new(dest, src), advance_size]
       when upper == 0x4a # TST (or TAS)
         if size_long?(lower) && addressing_absolute_long?(lower)
           next_long_word = memory.get_long_word(pc + S_1WORD)
-          [Instruction::TST.new(Target::Absolute.new(next_long_word), LONGWORD_SIZE), S_3WORD]
+          [Instruction::TST.new(Target::AbsoluteLong.new(next_long_word), LONGWORD_SIZE), S_3WORD]
         elsif size_word?(lower) && addressing_absolute_long?(lower)
           next_long_word = memory.get_long_word(pc + S_1WORD)
-          [Instruction::TST.new(Target::Absolute.new(next_long_word), WORD_SIZE), S_3WORD]
+          [Instruction::TST.new(Target::AbsoluteLong.new(next_long_word), WORD_SIZE), S_3WORD]
         else
           [:unknown, S_1WORD]
         end
-      when (upper & 0xC0) >> 6 == 0 && (upper & 0x30) >> 4 != 0 # MOVE
+      when upper & 0xC0 == 0 && (upper & 0x30) >> 4 != 0 # MOVE
         size = get_move_size(upper)
-        source, destination = get_move_source_and_destination(word, memory, pc)
-        [Instruction::MOVE.new(source, destination, size), 2 + S_2WORD] # currently only supporting LONGWORD
+        source, destination, data_mv = get_move_source_and_destination(word, memory, pc)
+        [Instruction::MOVE.new(source, destination, size), S_1WORD + data_mv]
       when upper & 0xF0 == 0x60
         # BRA, BSR, Bcc
         if [0xF0, 0xF1].include?(upper & 0xFF == 0xF0) # BRA or BSR
@@ -102,38 +97,52 @@ class Decoder
   end
 
   def get_move_source_and_destination(word, memory, pc)
-    dest = get_move_destination((word & 0x0FC0) >> 6)
-    src, _ = get_move_source(word & 0xFF, memory, pc)
-    [src, dest]
+    src, mvs = get_move_source(word & 0xFF, memory, pc)
+    dest, mvd = get_move_destination((word & 0x0FC0) >> 6, memory, pc + mvs)
+    [src, dest, mvs + mvd]
   end
 
-  def get_move_destination(six_bits)
+  def get_move_destination(six_bits, memory, pc)
     # Note this is 'swapped' compared to other 6 bit destinations in lower byte
     mode = six_bits & 0x7
     regnum = (six_bits & 0x38) >> 3
     if mode == 0 # Dn register
       regnames = [:d0, :d1, :d2, :d3, :d4, :d5, :d6, :d7]
-      Target::Register.new(regnames[regnum])
+      [Target::Register.new(regnames[regnum]), 0]
+    elsif mode == 0b111 && regnum == 0b001 # ABS long
+      [Target::AbsoluteLong.new(memory.get_long_word(pc + S_1WORD)), LONGWORD_SIZE]
+    elsif mode == 0b111 && regnum == 0b000 # ABS short
+      raise UnsupportedDestination.new("abs sort")
     else
+      puts "#{mode.to_s(2)}, #{regnum.to_s(2)}"
       raise UnsupportedDestination
     end
   end
 
   def get_move_source(byte, memory, pc) # TODO: could memory and pc be not passed
-    get_lower_target_and_size(byte, memory, pc)
+    get_lower_target(byte, memory, pc)
   end
 
   # size may or may not be determined prior to this function
   def get_lower_target_and_size(byte, memory, pc)
     size = get_lower_size(byte)
+    # currently this fuction is only called from ANDI, which is "immediate" so we can drop the 'mv'
+    target, _ = get_lower_target(byte, memory, pc)
+    [target, size]
+  end
+
+  def get_lower_target(byte, memory, pc)
     mode = (byte & 0x38) >> 3
     regnum = byte & 0x7
-    if mode == 0x7 && regnum == 0x1 # Absolute long
+    if mode == 0x7 && regnum == 0x1 # AbsoluteLong
       next_long_word = memory.get_long_word(pc + S_1WORD)
-      [Target::Absolute.new(next_long_word), LONGWORD_SIZE]
-    elsif mode == 0x00 && regnum = 0x0 # register d0
+      [Target::AbsoluteLong.new(next_long_word), LONGWORD_SIZE]
+    elsif mode == 0x00 && regnum == 0x0 # register d0
       next_word = memory.get_word(pc + S_1WORD)
-      [Target::Register.new(:d0), size]
+      [Target::Register.new(:d0), WORD_SIZE]
+    elsif mode == 0b111 && regnum == 0b100
+      next_long_word = memory.get_long_word(pc + S_1WORD)
+      [Target::Immediate.new(next_long_word), LONGWORD_SIZE]
     else
       raise UnsupportedSource
     end

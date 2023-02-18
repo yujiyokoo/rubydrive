@@ -25,15 +25,23 @@ describe Decoder do
 
     it "returns MOVE.b absolute long(00a10001), d0 for 0x103900a10001" do
       memory = Rom.new([0x10, 0x39, 0x00, 0xa1, 0x00, 0x01])
-      expected = Instruction::MOVE.new(Target::Absolute.new(0x00a10001), Target::Register.new(:d0), BYTE_SIZE)
+      expected = Instruction::MOVE.new(Target::AbsoluteLong.new(0x00a10001), Target::Register.new(:d0), BYTE_SIZE)
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
       assert_equal 6, mv
     end
 
+    it "returns MOVE.l immediate, asbolute long for 0x23fc" do
+      memory = Memory.new(rom: Rom.new([0x23, 0xFC, 0x53, 0x45, 0x47, 0x41, 0x00, 0xA1, 0x40, 0x00 ]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
+      expected = Instruction::MOVE.new(Target::Immediate.new(0x53454741), Target::AbsoluteLong.new(0x00a14000), LONGWORD_SIZE)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 10, mv
+    end
+
     it "returns TST.l, absolute long for 4a b9 00 a1 00 08" do
       memory = Rom.new([0x4a, 0xb9, 0x00, 0xa1, 0x00, 0x08])
-      tstl = Instruction::TST.new(Target::Absolute.new(0x00a10008), LONGWORD_SIZE)
+      tstl = Instruction::TST.new(Target::AbsoluteLong.new(0x00a10008), LONGWORD_SIZE)
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal tstl, instruction
       assert_equal 6, mv # advance by word + long-word
@@ -41,7 +49,7 @@ describe Decoder do
 
     it "returns TST.w, absolute long for 4a 79 00 a1 00 0c" do
       memory = Rom.new([0x4a, 0x79, 0x00, 0xa1, 0x00, 0x0c])
-      tstl = Instruction::TST.new(Target::Absolute.new(0x00a1000c), WORD_SIZE)
+      tstl = Instruction::TST.new(Target::AbsoluteLong.new(0x00a1000c), WORD_SIZE)
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal tstl, instruction
       assert_equal 6, mv # advance by word + long-word
@@ -82,7 +90,7 @@ describe Decoder do
     end
 
     it "returns ANDI.b #15, d0 for 02 00 00 FF" do
-      memory = Memory.new(rom: Rom.new([0x02, 0x00, 0x00, 0x0F]), controller_io: ControllerIO.new(0xFFFFFFFF))
+      memory = Memory.new(rom: Rom.new([0x02, 0x00, 0x00, 0x0F]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
       expected = Instruction::ANDI.new(Target::Immediate.new(0x0F), Target::Register.new(:d0), BYTE_SIZE)
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
@@ -90,7 +98,7 @@ describe Decoder do
     end
 
     it "returns BEQ.s Displacement(0a) for 0x670a" do
-      memory = Memory.new(rom: Rom.new([0x67, 0x0a]), controller_io: ControllerIO.new(0xFFFFFFFF))
+      memory = Memory.new(rom: Rom.new([0x67, 0x0a]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
       expected = Instruction::BEQ.new(Target::AddrDisplacement.new(0x0a), BYTE_SIZE)
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction

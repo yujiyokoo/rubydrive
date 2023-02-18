@@ -3,6 +3,7 @@ require 'minitest/autorun'
 require_relative './test_helper'
 require 'm68k'
 require 'rom'
+require 'ram'
 require 'decoder'
 require 'instruction'
 require 'memory'
@@ -12,7 +13,7 @@ require 'target'
 describe M68k do
   let(:rom_contents) { [0xff, 0xff, 0x00, 0xfe, 0x00, 0x00, 0x00, 0x08, 0x4E, 0x71] }
   let(:rom) { Rom.new(rom_contents) }
-  let(:memory) { Memory.new(rom: rom, controller_io: ControllerIO.new(0x00000000)) }
+  let(:memory) { Memory.new(rom: rom, controller_io: ControllerIO.new(0x00000000), ram: Ram.new) }
   let(:decoder) { Decoder.new }
 
   describe '#initialize' do
@@ -61,45 +62,45 @@ describe M68k do
     end
 
     describe 'MOVE' do
-      let(:memory) { Memory.new(rom: Rom.new([0, 0, 0, 0, 0, 0, 0, 0]), controller_io: ControllerIO.new(0x01234567)) }
+      let(:memory) { Memory.new(rom: Rom.new([0, 0, 0, 0, 0, 0, 0, 0]), controller_io: ControllerIO.new(0x01234567), ram: Ram.new) }
 
       it 'copies a byte only for MOVE.b, absolute, long, data reg' do
         m68k.registers[:d0] = 0xFFFF
-        m68k.execute(Instruction::MOVE.new(Target::Absolute.new(0x00a10001), Target::Register.new(:d0), BYTE_SIZE))
+        m68k.execute(Instruction::MOVE.new(Target::AbsoluteLong.new(0x00a10001), Target::Register.new(:d0), BYTE_SIZE))
         assert_equal 0xFF67, m68k.registers[:d0] # only the lowest byte is copied
       end
     end
 
     describe 'TST' do
       it 'sets V and C flags 0' do
-        m68k.execute(Instruction::TST.new(Target::Absolute.new(0x00a10008), LONGWORD_SIZE))
+        m68k.execute(Instruction::TST.new(Target::AbsoluteLong.new(0x00a10008), LONGWORD_SIZE))
         assert_equal 0b00, m68k.sr & 0x03
       end
 
       it 'checks long word at abusolute long word address and sets Z if zero' do
         m68k.sr = 0
-        m68k.execute(Instruction::TST.new(Target::Absolute.new(0x00a10008), LONGWORD_SIZE))
+        m68k.execute(Instruction::TST.new(Target::AbsoluteLong.new(0x00a10008), LONGWORD_SIZE))
         assert_equal 0b01, (m68k.sr & 0x0C) >> 2 # Z is set, N is not set
       end
 
       it 'checks long word at abusolute long word address and sets N if negative' do
-        m68k.memory = Memory.new(rom: rom, controller_io: ControllerIO.new(0xFFFFFFFF))
+        m68k.memory = Memory.new(rom: rom, controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
         m68k.sr = 0
-        m68k.execute(Instruction::TST.new(Target::Absolute.new(0x00a10008), LONGWORD_SIZE))
+        m68k.execute(Instruction::TST.new(Target::AbsoluteLong.new(0x00a10008), LONGWORD_SIZE))
         assert_equal 0b10, (m68k.sr & 0x0C) >> 2 # Z is not set, N is set
       end
 
       it 'checks word at abusolute long word address and sets Z if zero' do
-        m68k.memory = Memory.new(rom: rom, controller_io: ControllerIO.new(0xFFFF0000))
+        m68k.memory = Memory.new(rom: rom, controller_io: ControllerIO.new(0xFFFF0000), ram: Ram.new)
         m68k.sr = 0
-        m68k.execute(Instruction::TST.new(Target::Absolute.new(0x00a10008), WORD_SIZE))
+        m68k.execute(Instruction::TST.new(Target::AbsoluteLong.new(0x00a10008), WORD_SIZE))
         assert_equal 0b01, (m68k.sr & 0x0C) >> 2 # Z is set, N is not set
       end
 
       it 'checks word at abusolute long word address and sets N if negative' do
-        m68k.memory = Memory.new(rom: rom, controller_io: ControllerIO.new(0x0000FFFF))
+        m68k.memory = Memory.new(rom: rom, controller_io: ControllerIO.new(0x0000FFFF), ram: Ram.new)
         m68k.sr = 0
-        m68k.execute(Instruction::TST.new(Target::Absolute.new(0x00a10008), WORD_SIZE))
+        m68k.execute(Instruction::TST.new(Target::AbsoluteLong.new(0x00a10008), WORD_SIZE))
         assert_equal 0b10, (m68k.sr & 0x0C) >> 2 # Z is not set, N is set
       end
     end

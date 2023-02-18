@@ -46,10 +46,17 @@ class M68k
     when 'Instruction::MOVE_TO_SR'
       @sr = (0xFF & instruction.value) # Copy only the lower word to SR
     when 'Instruction::MOVE'
-      raise UnsupportedInstruction if !(instruction.target.is_a?(Target::Absolute) && instruction.size == BYTE_SIZE && instruction.destination.is_a?(Target::Register)) 
-      source_byte = memory.get_byte(instruction.target.address)
-
-      registers[instruction.destination.name] = (registers[instruction.destination.name] & 0xFF00) | source_byte
+      if instruction.target.is_a?(Target::AbsoluteLong) && instruction.size == BYTE_SIZE && instruction.destination.is_a?(Target::Register)
+        source_byte = memory.get_byte(instruction.target.address)
+        registers[instruction.destination.name] = (registers[instruction.destination.name] & 0xFF00) | source_byte
+      elsif instruction.target.is_a?(Target::Immediate) && instruction.size == LONGWORD_SIZE && instruction.destination.is_a?(Target::AbsoluteLong)
+        source_lw = instruction.target.value
+        dest_addr = instruction.destination.address
+        memory.write_long_word(dest_addr, source_lw)
+        memory
+      else
+        raise UnsupportedInstruction("Unsupported: #{instruction}")
+      end
     when 'Instruction::TST'
       value = read_target(instruction, memory)
       @sr = sr | 0x04 if value == 0
@@ -104,7 +111,7 @@ class M68k
 
   def read_target(instruction, memory)
     case instruction.target.class.name
-    when 'Target::Absolute' # TODO: better way to identify class?
+    when 'Target::AbsoluteLong' # TODO: better way to identify class?
       if instruction.size == LONGWORD_SIZE
         memory.get_long_word(instruction.target.address)
       elsif instruction.size == WORD_SIZE

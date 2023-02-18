@@ -1,5 +1,5 @@
 class Target
-  class Absolute < Struct.new('Absolute', :address)
+  class AbsoluteLong < Struct.new('AbsoluteLong', :address)
   end
 
   class AddrDisplacement < Struct.new('AddrDisplacement', :value)

@@ -35,7 +35,7 @@ looking at instruction word at e: 4e71
 instruction: #<struct Instruction::NOP>
 Instruction::NOP
 looking at instruction word at 10: 4a79
-instruction: #<struct Instruction::TST target=#<struct Target::Absolute address=0>, size=2>
+instruction: #<struct Instruction::TST target=#<struct Target::AbsoluteLong address=0>, size=2>
 Instruction::TST
 looking at instruction word at 16: 4e72
 instruction: #<struct Instruction::STOP value=9984>

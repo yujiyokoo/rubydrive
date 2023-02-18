@@ -5,6 +5,7 @@ $:.push('src')
 
 require 'm68k'
 require 'rom'
+require 'ram'
 require 'memory'
 require 'controller_io'
 require 'ruby_drive'
@@ -18,7 +19,7 @@ rom_file = open(ARGV[0], 'rb') do |binfile|
   ary = bin.unpack('c*')
 end
 
-memory = Memory.new(rom: Rom.new(rom_file), controller_io: ControllerIO.new(0xFFFFFFFF))
+memory = Memory.new(rom: Rom.new(rom_file), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
 decoder = Decoder.new
 
 RubyDrive.new(M68k.new(memory, decoder)).run
