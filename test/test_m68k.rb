@@ -121,7 +121,7 @@ describe M68k do
       it 'updates PC by 0a (for 0x670a) if Z flag is 1' do
         m68k.pc = 2
         m68k.sr = 0x04
-        instruction = Instruction::BEQ.new(Target::AddrDisplacement.new(0x0a), SHORT_SIZE)
+        instruction = Instruction::BEQ.new(Target::AddrDisplacement.new(0x0a))
         m68k.execute(instruction)
         assert_equal 0x0C, m68k.pc
       end

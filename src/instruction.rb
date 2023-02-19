@@ -25,6 +25,6 @@ class Instruction
   class BNE < Struct.new('BNE', :target, :size)
   end
 
-  class BEQ < Struct.new('BEQ', :target, :size) 
+  class BEQ < Struct.new('BEQ', :target) 
   end
 end

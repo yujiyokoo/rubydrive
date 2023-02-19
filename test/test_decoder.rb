@@ -99,7 +99,7 @@ describe Decoder do
 
     it "returns BEQ.s Displacement(0a) for 0x670a" do
       memory = Memory.new(rom: Rom.new([0x67, 0x0a]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
-      expected = Instruction::BEQ.new(Target::AddrDisplacement.new(0x0a), BYTE_SIZE)
+      expected = Instruction::BEQ.new(Target::AddrDisplacement.new(0x0a))
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
       assert_equal 2, mv
