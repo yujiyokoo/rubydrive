@@ -99,7 +99,15 @@ describe Decoder do
 
     it "returns BEQ.s Displacement(0a) for 0x670a" do
       memory = Memory.new(rom: Rom.new([0x67, 0x0a]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
-      expected = Instruction::BEQ.new(Target::AddrDisplacement.new(0x0a))
+      expected = Instruction::BEQ.new(Target::AddrDisplacement.new(0x0a), SHORT_SIZE)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 2, mv
+    end
+
+    it "returns BSR.s with Displacement(0x98) for 0x6198" do
+      memory = Memory.new(rom: Rom.new([0x61, 0x98]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
+      expected = Instruction::BSR.new(Target::AddrDisplacement.new(0x98), SHORT_SIZE)
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
       assert_equal 2, mv

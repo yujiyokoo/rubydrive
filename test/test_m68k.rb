@@ -121,9 +121,20 @@ describe M68k do
       it 'updates PC by 0a (for 0x670a) if Z flag is 1' do
         m68k.pc = 2
         m68k.sr = 0x04
-        instruction = Instruction::BEQ.new(Target::AddrDisplacement.new(0x0a))
+        instruction = Instruction::BEQ.new(Target::AddrDisplacement.new(0x0a), SHORT_SIZE)
         m68k.execute(instruction)
         assert_equal 0x0C, m68k.pc
+      end
+    end
+
+    describe 'BSR' do
+      it 'modifies PC by 0x98 (-104 in dec) (for 0x6198)' do
+      $debug = true
+        m68k.pc = 0x98
+        instruction = Instruction::BSR.new(Target::AddrDisplacement.new(0x98), SHORT_SIZE)
+        m68k.execute(instruction)
+        $debug = false
+        assert_equal 0x30, m68k.pc
       end
     end
 

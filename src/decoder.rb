@@ -44,9 +44,9 @@ class Decoder
         source, destination, data_mv = get_move_source_and_destination(word, memory, pc)
         [Instruction::MOVE.new(source, destination, size), S_1WORD + data_mv]
       when upper & 0xF0 == 0x60
-        # BRA, BSR, Bcc
-        if [0xF0, 0xF1].include?(upper & 0xFF == 0xF0) # BRA or BSR
-          raise UnsupportedInstruction.new("BRA or BSR not supported yet")
+        # BRA, Bcc
+        if 0x60 == (upper & 0xFF) # BRA
+          raise UnsupportedInstruction.new("BRA not supported yet")
         end
         displacement, size, mv = if lower == 0 # word displacement
           [memory.get_word(pc + S_1WORD), WORD_SIZE, S_2WORD]
@@ -57,7 +57,9 @@ class Decoder
         if upper & 0x0F == 0x06 # BNE
           [Instruction::BNE.new(Target::AddrDisplacement.new(displacement), size), mv]
         elsif upper & 0x0F == 0x07 # BNE
-          [Instruction::BEQ.new(Target::AddrDisplacement.new(displacement)), mv]
+          [Instruction::BEQ.new(Target::AddrDisplacement.new(displacement), size), mv]
+        elsif upper & 0x0F == 0x01 # BSR
+          [Instruction::BSR.new(Target::AddrDisplacement.new(displacement), size), mv]
         else
           raise UnsupportedInstruction.new("Bcc 0x#{word.to_s(16)} not supported yet")
         end
