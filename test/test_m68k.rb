@@ -134,11 +134,12 @@ describe M68k do
     end
 
     describe 'BSR' do
-      it 'modifies PC by 0x98 (-104 in dec) (for 0x6198)' do
-        m68k.pc = 0x98
-        instruction = Instruction::BSR.new(Target::AddrDisplacement.new(0x98), SHORT_SIZE)
+      it 'modifies PC by 0x98 (-104 in dec) (for 0x6198) and saves PC value in SP (a7)' do
+        m68k.pc = 0x02
+        instruction = Instruction::BSR.new(Target::AddrDisplacement.new(0xFE), SHORT_SIZE)
         m68k.execute(instruction)
-        assert_equal 0x30, m68k.pc
+        assert_equal 0, m68k.pc
+        assert_equal 0x00000008, m68k.sp
       end
     end
 

@@ -84,6 +84,12 @@ class M68k
         @pc += read_target(instruction, memory)
       end
     when 'Instruction::BSR'
+      mv = if instruction.target_size == WORD_SIZE
+        WORD_SIZE * 2
+      else
+        WORD_SIZE
+      end
+      self.sp = memory.get_long_word(@pc + mv)
       @pc += read_target(instruction, memory)
     when 'Instruction::LEA'
       raise UnsupportedInstruction unless instruction.target.is_a?(Target::PcDisplacement)
