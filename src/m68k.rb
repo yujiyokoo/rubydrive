@@ -48,12 +48,25 @@ class M68k
     when 'Instruction::MOVE'
       if instruction.target.is_a?(Target::AbsoluteLong) && instruction.target_size == BYTE_SIZE && instruction.destination.is_a?(Target::Register)
         source_byte = memory.get_byte(instruction.target.address)
-        registers[instruction.destination.name] = (registers[instruction.destination.name] & 0xFF00) | source_byte
-      elsif instruction.target.is_a?(Target::Immediate) && instruction.target_size == LONGWORD_SIZE && instruction.destination.is_a?(Target::AbsoluteLong)
-        source_lw = instruction.target.value
-        dest_addr = instruction.destination.address
-        memory.write_long_word(dest_addr, source_lw)
-        memory
+        registers[instruction.destination.name] = (registers[instruction.destination.name] & 0xFFFFFF00) | source_byte
+      elsif instruction.target.is_a?(Target::Immediate)
+        if instruction.target_size == LONGWORD_SIZE && instruction.destination.is_a?(Target::AbsoluteLong)
+          source_lw = instruction.target.value
+          dest_addr = instruction.destination.address
+          memory.write_long_word(dest_addr, source_lw)
+          memory
+        elsif instruction.target_size == WORD_SIZE && instruction.destination.is_a?(Target::AbsoluteLong)
+          source_w = instruction.target.value
+          dest_addr = instruction.destination.address
+          memory.write_word(dest_addr, source_w)
+          memory
+        elsif instruction.target_size == WORD_SIZE && instruction.destination.is_a?(Target::Register)
+          source_w = instruction.target.value
+          registers[instruction.destination.name] = (registers[instruction.destination.name] & 0xFFFF0000) | (instruction.target.value & 0xFFFF)
+          memory
+        else
+          raise UnsupportedInstruction.new("Unsupported: #{instruction}")
+        end
       else
         raise UnsupportedInstruction.new("Unsupported: #{instruction}")
       end

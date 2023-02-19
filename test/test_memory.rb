@@ -56,13 +56,32 @@ describe Memory do
 
       it 'raises an error when attempting to write to rom' do
         assert_raises(InvalidAddress) do
-          memory.write_long_word(0, 0x53544741)
+          memory.write_long_word(0, 0x53454741)
         end
       end
 
       it 'raises an error if address is out of range' do
         assert_raises(InvalidAddress) do
           memory.write_long_word(0x1000000, 0x53454741)
+        end
+      end
+    end
+
+    describe '#write_word' do
+      it 'writes a word at address' do
+        memory.write_word(0xFF0000, 0x5345)
+        assert_equal 0x5345, memory.get_word(0xFF0000)
+      end
+
+      it 'raises an error when attempting to write to rom' do
+        assert_raises(InvalidAddress) do
+          memory.write_word(0, 0x5345)
+        end
+      end
+
+      it 'raises an error if address is out of range' do
+        assert_raises(InvalidAddress) do
+          memory.write_word(0x1000000, 0x5345)
         end
       end
     end

@@ -65,9 +65,15 @@ describe M68k do
       let(:memory) { Memory.new(rom: Rom.new([0, 0, 0, 0, 0, 0, 0, 0]), controller_io: ControllerIO.new(0x01234567), ram: Ram.new) }
 
       it 'copies a byte only for MOVE.b, absolute, long, data reg' do
-        m68k.registers[:d0] = 0xFFFF
+        m68k.registers[:d0] = 0xFFFFFFFF
         m68k.execute(Instruction::MOVE.new(Target::AbsoluteLong.new(0x00a10001), Target::Register.new(:d0), BYTE_SIZE))
-        assert_equal 0xFF67, m68k.registers[:d0] # only the lowest byte is copied
+        assert_equal 0xFFFFFF67, m68k.registers[:d0] # only the lowest byte is copied
+      end
+
+      it 'copies a word for MOVE.w, immediate, data reg' do
+        m68k.registers[:d0] = 0xFFFFFFFF
+        m68k.execute(Instruction::MOVE.new(Target::Immediate.new(0xCCCC), Target::Register.new(:d0), WORD_SIZE))
+        assert_equal 0xFFFFCCCC, m68k.registers[:d0] # only the lower byte is copied
       end
     end
 
@@ -129,11 +135,9 @@ describe M68k do
 
     describe 'BSR' do
       it 'modifies PC by 0x98 (-104 in dec) (for 0x6198)' do
-      $debug = true
         m68k.pc = 0x98
         instruction = Instruction::BSR.new(Target::AddrDisplacement.new(0x98), SHORT_SIZE)
         m68k.execute(instruction)
-        $debug = false
         assert_equal 0x30, m68k.pc
       end
     end

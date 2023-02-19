@@ -32,11 +32,19 @@ describe Decoder do
     end
 
     it "returns MOVE.l immediate, asbolute long for 0x23fc" do
-      memory = Memory.new(rom: Rom.new([0x23, 0xFC, 0x53, 0x45, 0x47, 0x41, 0x00, 0xA1, 0x40, 0x00 ]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
+      memory = Memory.new(rom: Rom.new([0x23, 0xFC, 0x53, 0x45, 0x47, 0x41, 0x00, 0xA1, 0x40, 0x00]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
       expected = Instruction::MOVE.new(Target::Immediate.new(0x53454741), Target::AbsoluteLong.new(0x00a14000), LONGWORD_SIZE)
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
       assert_equal 10, mv
+    end
+
+    it "returns MOVE.w immediate, register d0 for 0x303c" do
+      memory = Memory.new(rom: Rom.new([0x30, 0x3C, 0x7f, 0xf0]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
+      expected = Instruction::MOVE.new(Target::Immediate.new(0x7ff0), Target::Register.new(:d0), WORD_SIZE)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 4, mv
     end
 
     it "returns TST.l, absolute long for 4a b9 00 a1 00 08" do

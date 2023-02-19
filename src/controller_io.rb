@@ -31,4 +31,8 @@ class ControllerIO
     raise UnsupportedAddress unless valid_address?(addr)
     # peripheral unimplemented at this stage
   end
+
+  def copy_word(addr, value)
+    copy_long_word(addr, value)
+  end
 end

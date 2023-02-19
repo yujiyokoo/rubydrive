@@ -38,6 +38,8 @@ class Memory
   def get_word(addr)
     if rom_addr?(addr)
       rom.get_word(addr)
+    elsif ram_addr?(addr)
+      ram.get_word(addr)
     elsif controller_io_addr?(addr)
       controller_io.get_word(addr)
     else
@@ -65,14 +67,26 @@ class Memory
   end
 
   def write_long_word(addr, longword)
-    if ram_addr?(addr)
-      ram.copy_long_word(addr, longword)
-    elsif controller_io_addr?(addr)
-      controller_io.copy_long_word(addr, longword)
+    write_value(addr, LONGWORD_SIZE, longword)
+  end
+
+  def write_word(addr, word)
+    write_value(addr, WORD_SIZE, word)
+  end
+
+  def write_value(addr, size, value)
+    if ram_addr?(addr) && size == LONGWORD_SIZE
+      ram.copy_long_word(addr, value)
+    elsif ram_addr?(addr) && size == WORD_SIZE
+      ram.copy_word(addr, value)
+    elsif controller_io_addr?(addr) && size == LONGWORD_SIZE
+      controller_io.copy_long_word(addr, value)
+    elsif controller_io_addr?(addr) && size == WORD_SIZE
+      controller_io.copy_word(addr, value)
     elsif other_valid_addr?(addr)
       # Unimplemented stuff like TMSS
     else
-      raise InvalidAddress
+      raise InvalidAddress.new("Unsupported write to addr: #{addr}, size: #{size}, val: #{value}")
     end
   end
 end
