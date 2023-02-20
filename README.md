@@ -1,6 +1,7 @@
 # rubydrive
 
-Motorola 68000 emulator (Mega Drive) in ruby.
+A **really incomplete** and very early stage Motorola 68000 emulator (Mega Drive) in ruby.
+It's only capable of running a few instructions which is just sufficient for the "minimal" ROM (which does not do anything useful) at the moment.
 
 ## Running
 
