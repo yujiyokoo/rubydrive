@@ -111,10 +111,13 @@ class Decoder
     if mode == 0 # Dn register
       regnames = [:d0, :d1, :d2, :d3, :d4, :d5, :d6, :d7]
       [Target::Register.new(regnames[regnum]), 0]
+    elsif mode == 0b001 # An register
+      regnames = [:a0, :a1, :a2, :a3, :a4, :a5, :a6, :a7]
+      [Target::Register.new(regnames[regnum]), 0]
     elsif mode == 0b111 && regnum == 0b001 # ABS long
       [Target::AbsoluteLong.new(memory.get_long_word(pc + S_1WORD)), LONGWORD_SIZE]
     elsif mode == 0b111 && regnum == 0b000 # ABS short
-      raise UnsupportedDestination.new("abs sort")
+      raise UnsupportedDestination.new("abs short")
     else
       raise UnsupportedDestination.new("unimplemented dest: #{mode.to_s(2).rjust(3, "0")}, #{regnum.to_s(2).rjust(3, "0")}")
     end

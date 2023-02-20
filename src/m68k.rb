@@ -55,6 +55,9 @@ class M68k
           dest_addr = instruction.destination.address
           memory.write_long_word(dest_addr, source_lw)
           memory
+        elsif instruction.target_size == LONGWORD_SIZE && instruction.destination.is_a?(Target::Register)
+          source_lw = instruction.target.value
+          registers[instruction.destination.name] = source_lw
         elsif instruction.target_size == WORD_SIZE && instruction.destination.is_a?(Target::AbsoluteLong)
           source_w = instruction.target.value
           dest_addr = instruction.destination.address
