@@ -48,6 +48,15 @@ describe Decoder do
       assert_equal 6, mv
     end
 
+    it "returns MOVE.w immediate, A0 dereferenced, with increment for 0x30FC" do
+      rom = Rom.new([0x30, 0xFC, 0x00, 0x00])
+      memory = Memory.new(rom: rom, controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
+      expected = Instruction::MOVE.new(Target::Immediate.new(0x00000000), Target::RegisterIndirect.new(:a0, true), WORD_SIZE)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 4, mv
+    end
+
     it "returns MOVE.w immediate, register d0 for 0x303c" do
       memory = Memory.new(rom: Rom.new([0x30, 0x3C, 0x7f, 0xf0]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
       expected = Instruction::MOVE.new(Target::Immediate.new(0x7ff0), Target::Register.new(:d0), WORD_SIZE)

@@ -67,6 +67,11 @@ class M68k
           source_w = instruction.target.value
           registers[instruction.destination.name] = (registers[instruction.destination.name] & 0xFFFF0000) | (instruction.target.value & 0xFFFF)
           memory
+        elsif instruction.target_size == WORD_SIZE && instruction.destination.is_a?(Target::RegisterIndirect)
+          source_w = instruction.target.value
+          memory.write_word(registers[instruction.destination.name], source_w)
+          registers[instruction.destination.name] += instruction.target_size if instruction.destination.post_increment
+          memory
         else
           raise UnsupportedInstruction.new("Unsupported: #{instruction}")
         end

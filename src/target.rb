@@ -13,4 +13,7 @@ class Target
 
   class Immediate < Struct.new('Immediate', :value)
   end
+
+  class RegisterIndirect < Struct.new('RegisterIndirect', :name, :post_increment)
+  end
 end

@@ -81,6 +81,13 @@ describe M68k do
         m68k.execute(Instruction::MOVE.new(Target::Immediate.new(0x01234567), Target::Register.new(:a0), LONGWORD_SIZE))
         assert_equal 0x01234567, m68k.registers[:a0]
       end
+
+      it 'copies a word and increments register for MOVE.w, immediate, register indirect w/ post increment' do
+        m68k.registers[:a0] = 0x00FFFFF0
+        m68k.execute(Instruction::MOVE.new(Target::Immediate.new(0x01234567), Target::RegisterIndirect.new(:a0, true), WORD_SIZE))
+        assert_equal memory.get_word(0x00FFFFF0), 0x4567
+        assert_equal 0x00FFFFF2, m68k.registers[:a0]
+      end
     end
 
     describe 'TST' do

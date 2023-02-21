@@ -104,16 +104,20 @@ class Decoder
     [src, dest, mvs + mvd]
   end
 
+
+  DREG_NAMES = [:d0, :d1, :d2, :d3, :d4, :d5, :d6, :d7]
+  AREG_NAMES = [:a0, :a1, :a2, :a3, :a4, :a5, :a6, :a7]
+
   def get_move_destination(six_bits, memory, pc)
     # Note this is 'swapped' compared to other 6 bit destinations in lower byte
     mode = six_bits & 0x7
     regnum = (six_bits & 0x38) >> 3
     if mode == 0 # Dn register
-      regnames = [:d0, :d1, :d2, :d3, :d4, :d5, :d6, :d7]
-      [Target::Register.new(regnames[regnum]), 0]
+      [Target::Register.new(DREG_NAMES[regnum]), 0]
     elsif mode == 0b001 # An register
-      regnames = [:a0, :a1, :a2, :a3, :a4, :a5, :a6, :a7]
-      [Target::Register.new(regnames[regnum]), 0]
+      [Target::Register.new(AREG_NAMES[regnum]), 0]
+    elsif mode == 0b011 # Register Indirect with post increment
+      [Target::RegisterIndirect.new(AREG_NAMES[regnum], true), 0]
     elsif mode == 0b111 && regnum == 0b001 # ABS long
       [Target::AbsoluteLong.new(memory.get_long_word(pc + S_1WORD)), LONGWORD_SIZE]
     elsif mode == 0b111 && regnum == 0b000 # ABS short
