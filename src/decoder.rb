@@ -76,12 +76,26 @@ class Decoder
         source = Target::Immediate.new(next_word)
         dest, size = get_lower_target_and_size(lower & 0x3F, memory, pc)
         [Instruction::ANDI.new(source, dest, size), S_2WORD]
+      when is_dbcc?(upper, lower)
+        if (upper & 0x0F) == 0x01 # condition: false
+          displacement = Displacement.new(to_word_signed(memory.get_word(pc + S_1WORD)))
+          data_reg = data_reg(lower & 0b111)
+          [Instruction::DBcc.new(Condition::False, Target::Register.new(data_reg), displacement), S_1WORD]
+        else
+          raise UnsupportedInstruction.new("DBcc not DBF")
+        end
       else
         raise UnsupportedInstruction.new("cannot decode '0x#{word.to_s(16)}'")
     end
 
     [instruction, adv]
   end
+
+  def data_reg(num)
+    DREG_NAMES[num]
+  end
+
+  def is_dbcc?(upper_byte, lower_byte) = (upper_byte & 0xF0) == 0X50 && (lower_byte & 0xF8) == 0xC8
 
   def is_andi?(upper_byte) = upper_byte == 0x02
 
@@ -179,7 +193,7 @@ class Decoder
   end
 
   def upper_An(byte)
-    regnames = [:a0, :a1, :a2, :a3, :a4, :a5, :a6, :a7]
+    regnames = AREG_NAMES
     regnum = (byte & 0x0E) >> 1
     reg = regnames[regnum]
 

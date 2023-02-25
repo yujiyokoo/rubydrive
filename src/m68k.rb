@@ -121,6 +121,18 @@ class M68k
 
       z = (result == 0)
       @sr |= 0x00000008 if z
+    when 'Instruction::DBcc'
+      registers[instruction.target.name] -= 1
+      if instruction.condition.evaluate
+        # fall through to next
+        raise UnsupportedInstruction.new("Bcc true not implemented yet")
+      else
+        if registers[instruction.target.name] == -1
+          @pc += 4
+        else
+          @pc += (2 + instruction.displacement.value)
+        end
+      end
     else
       raise UnsupportedInstruction.new(instruction.class.name)
     end
@@ -158,16 +170,6 @@ class M68k
       memory.get_long_word(instruction.target.value)
     else
       raise UnsupportedTarget.new("Unsupported target type")
-    end
-  end
-
-  def to_short_signed(num)
-    raise RuntimeException.new("negative num not supported: #{num}") if num < 0
-
-    if num <= 127
-      return num
-    else
-      return num - 2**8
     end
   end
 end

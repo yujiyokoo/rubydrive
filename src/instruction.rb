@@ -39,4 +39,8 @@ class Instruction
   class BSR < Struct.new('BSR', :target, :target_size) do
     def initialize(target, target_size) = super; end
   end
+
+  class DBcc < Struct.new('DBcc', :condition, :target, :displacement) do
+    def initialize(condition, target, displacement) = super; end
+  end
 end

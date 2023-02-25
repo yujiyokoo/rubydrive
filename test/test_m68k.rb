@@ -156,6 +156,24 @@ describe M68k do
       end
     end
 
+    describe 'DBcc' do
+      it 'moves PC by -4 (3e to 3a) for DBcc false, d0, -6 if d0 > 0' do
+        m68k.pc = 0x3e
+        m68k.registers[:d0] = 1
+        instruction = Instruction::DBcc.new(Condition::False, Target::Register.new(:d0), Displacement.new(-6))
+        m68k.execute(instruction)
+        assert_equal 0x3a, m68k.pc
+      end
+
+      it 'moves PC by 4 (3e to 42) for DBcc false, d0, -6 if d0 == 0' do
+        m68k.pc = 0x3e
+        m68k.registers[:d0] = 0
+        instruction = Instruction::DBcc.new(Condition::False, Target::Register.new(:d0), Displacement.new(-6))
+        m68k.execute(instruction)
+        assert_equal 0x42, m68k.pc
+      end
+    end
+
     describe 'LEA' do
       it 'adds content at (PC+displacement) and stores it in register' do
         m68k.pc = 0xFF
