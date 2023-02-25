@@ -59,7 +59,7 @@ class Memory
     end
   end
 
-  def rom_addr?(addr) = addr <= ROM_END
+  def rom_addr?(addr) = 0 <= addr && addr <= ROM_END
   def controller_io_addr?(addr) = CONTROLLER_IO_START <= addr && addr <= CONTROLLER_IO_END
   def ram_addr?(addr) = RAM_START <= addr && addr <= RAM_END
   def other_valid_addr?(addr)

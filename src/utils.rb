@@ -35,22 +35,28 @@ class InvalidAddress < Exception
 end
 
 def to_short_signed(num)
-  raise RuntimeException.new("negative num not supported: #{num}") if num < 0
+  raise RuntimeError.new("negative num not supported: #{num}") if num < 0
 
   if num <= 127
     return num
   else
-    return num - 2**8
+    return (num & 0xFF) - 2**8
   end
 end
 
 def to_word_signed(num)
-  raise RuntimeException.new("negative num not supported: #{num}") if num < 0
+  if num < 0
+    if num > -32768
+      num
+    else
+      raise RuntimeError.new("below -32768 not supported: #{num}")
+    end
+  end
 
   if num <= 32767
     return num
   else
-    return num - 2**16
+    return (num & 0xFFFF) - 2**16
   end
 end
 

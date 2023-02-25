@@ -1,6 +1,8 @@
 require 'instruction'
 
 require 'target'
+require 'displacement'
+require 'condition'
 
 class Decoder
   S_3WORD = 6
