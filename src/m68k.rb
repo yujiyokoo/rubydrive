@@ -128,9 +128,9 @@ class M68k
         raise UnsupportedInstruction.new("Bcc true not implemented yet")
       else
         if registers[instruction.target.name] == -1
-          @pc += 4
+          @pc += WORD_SIZE
         else
-          @pc += (2 + instruction.displacement.value)
+          @pc += instruction.displacement.value
         end
       end
     else
