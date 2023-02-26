@@ -148,8 +148,7 @@ describe M68k do
 
     describe 'BSR' do
       it 'modifies PC by 0xFE (-2 in dec) (for 0x61FE) and saves PC value in SP (a7)' do
-        $debug = true
-        m68k.pc = 0x02
+        m68k.pc = 0x02 # this is 'next instruction'
         instruction = Instruction::BSR.new(Target::AddrDisplacement.new(0xFE), SHORT_SIZE)
         m68k.execute(instruction)
         assert_equal 0, m68k.pc
@@ -157,7 +156,14 @@ describe M68k do
         assert_equal 0x02, memory.get_long_word(m68k.sp)
       end
 
-      #it 'modifies PC by X for 
+      it 'modifies PC by 0x1234 (for 0x61001234) and saves PC value in (SP)' do
+        m68k.pc = 0x02 # this is 'next instruction - displacement word'... needs some refactor
+        instruction = Instruction::BSR.new(Target::AddrDisplacement.new(0x1234), WORD_SIZE)
+        m68k.execute(instruction)
+        assert_equal 0x1236, m68k.pc
+        assert_equal 0x00FF00FA, m68k.sp
+        assert_equal 0x04, memory.get_long_word(m68k.sp)
+      end
     end
 
     describe 'DBcc' do

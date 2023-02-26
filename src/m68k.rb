@@ -167,7 +167,10 @@ class M68k
     when 'Target::AddrDisplacement'
       if instruction.target_size == SHORT_SIZE
         to_short_signed(instruction.target.value)
+      elsif instruction.target_size == WORD_SIZE
+        to_word_signed(instruction.target.value)
       else
+        # This should not ever happen in 68000
         raise UnsupportedTarget.new("Unsupported addr displacement target target_size")
       end
     when 'Target::PcDisplacement' # size should always be long word

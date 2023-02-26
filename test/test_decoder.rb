@@ -141,6 +141,14 @@ describe Decoder do
       assert_equal 2, mv
     end
 
+    it "returns BSR.w with Displacement(0x1234) for 0x61001234" do
+      memory = Memory.new(rom: Rom.new([0x61, 0x00, 0x12, 0x34]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
+      expected = Instruction::BSR.new(Target::AddrDisplacement.new(0x1234), WORD_SIZE)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 4, mv
+    end
+
     it "returns DBcc false, register d0, -6 for 0x51C8FFFA" do
       memory = Memory.new(rom: Rom.new([0x51, 0xC8, 0xFF, 0xFA]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
       expected = Instruction::DBcc.new(Condition::False, Target::Register.new(:d0), Displacement.new(-6))
