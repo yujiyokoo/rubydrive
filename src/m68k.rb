@@ -32,14 +32,15 @@ class M68k
     running
   end
 
-  def next_instruction
-    instruction, size = decoder.get_instruction(memory, @pc)
+  def current_instruction
+    decoder.get_instruction(memory, @pc)
+  end
+
+  def increment_pc(size)
     @pc += size
-    instruction
   end
 
   def execute(instruction)
-    debugpr(instruction.class.name)
     case instruction.class.name # TODO: better way to identify class?
     when 'Instruction::NOP'
       nil # don't do anything as it's a NOP
@@ -92,13 +93,8 @@ class M68k
         @pc += read_target(instruction, memory)
       end
     when 'Instruction::BSR'
-      displacement_size = if instruction.target_size == WORD_SIZE
-        WORD_SIZE # the following word is used as displacement
-      else
-        0 # SHORT does not have a following param
-      end
       self.sp -= 4
-      memory.write_long_word(self.sp, @pc + displacement_size)
+      memory.write_long_word(self.sp, @pc)
       @pc += read_target(instruction, memory)
     when 'Instruction::LEA'
       raise UnsupportedInstruction unless instruction.target.is_a?(Target::PcDisplacement)

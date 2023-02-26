@@ -5,7 +5,7 @@ require 'ruby_drive'
 
 describe RubyDrive do
   let(:fake_m68k) {
-    Struct.new(:next_instruction, :running) do
+    Struct.new(:current_instruction, :running) do
       def running?
         running
       end
@@ -14,12 +14,12 @@ describe RubyDrive do
       end
     end
   }
-  let(:m68k) { fake_m68k.new(:inst, :false) }
+  let(:m68k) { fake_m68k.new([:inst, WORD_SIZE], :false) }
   let(:rd) { RubyDrive.new(m68k) }
 
-  describe '#step' do
-    it 'gets next instruction from m68k' do
-      assert_equal rd.step, :inst
+  describe '#get_instruction' do
+    it 'gets current instruction from m68k' do
+      assert_equal rd.get_instruction, [:inst, WORD_SIZE]
     end
   end
 

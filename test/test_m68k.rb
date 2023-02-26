@@ -31,17 +31,17 @@ describe M68k do
     end
   end
 
-  describe '#next_instruction' do
+  describe '#current_instruction' do
     it 'returns the content at PC' do
       # 0x4E71 is NOP
-      assert_equal Instruction::NOP.new, M68k.new(memory, decoder).next_instruction
+      assert_equal [Instruction::NOP.new, S_1WORD], M68k.new(memory, decoder).current_instruction
     end
 
-    it 'advances the PC by instruction size' do
+    it 'does not move PC (any more)' do
       m68k = M68k.new(memory, decoder)
       assert_equal 8, m68k.pc
-      m68k.next_instruction
-      assert_equal 10, m68k.pc # currently hardcoded to WORD size
+      m68k.current_instruction
+      assert_equal 8, m68k.pc
     end
   end
 
@@ -148,7 +148,7 @@ describe M68k do
 
     describe 'BSR' do
       it 'modifies PC by 0xFE (-2 in dec) (for 0x61FE) and saves PC value in SP (a7)' do
-        m68k.pc = 0x02 # this is 'next instruction'
+        m68k.pc = 0x02
         instruction = Instruction::BSR.new(Target::AddrDisplacement.new(0xFE), SHORT_SIZE)
         m68k.execute(instruction)
         assert_equal 0, m68k.pc
@@ -157,12 +157,12 @@ describe M68k do
       end
 
       it 'modifies PC by 0x1234 (for 0x61001234) and saves PC value in (SP)' do
-        m68k.pc = 0x02 # this is 'next instruction - displacement word'... needs some refactor
+        m68k.pc = 0x02
         instruction = Instruction::BSR.new(Target::AddrDisplacement.new(0x1234), WORD_SIZE)
         m68k.execute(instruction)
         assert_equal 0x1236, m68k.pc
         assert_equal 0x00FF00FA, m68k.sp
-        assert_equal 0x04, memory.get_long_word(m68k.sp)
+        assert_equal 0x02, memory.get_long_word(m68k.sp)
       end
     end
 

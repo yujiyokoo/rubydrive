@@ -10,21 +10,20 @@ class RubyDrive
     @m68k = m68k
   end
 
-  def step
-    instruction = m68k.next_instruction
+  def get_instruction
+    instruction, size = m68k.current_instruction
 
-    if instruction.is_a?(Instruction::NOP)
-      # puts "found a NOP!"
-    end
-    instruction
+    [instruction, size]
   end
 
   def run
     m68k.running = true
     while m68k.running?
-      instruction = step
+      debugpr "--"
+      instruction, size = get_instruction
       debugpr "instruction: #{instruction}"
       m68k.execute(instruction)
+      m68k.increment_pc(size)
     end
   end
 end

@@ -3,11 +3,9 @@ require 'instruction'
 require 'target'
 require 'displacement'
 require 'condition'
+require 'utils'
 
 class Decoder
-  S_3WORD = 6
-  S_2WORD = 4
-  S_1WORD = 2
   def get_instruction(memory, pc)
     # According to https://www.nxp.com/files-static/archives/doc/ref_manual/M68000PRM.pdf
     # "instructions consist of at least one word"
@@ -61,7 +59,9 @@ class Decoder
         elsif upper & 0x0F == 0x07 # BNE
           [Instruction::BEQ.new(Target::AddrDisplacement.new(displacement), size), mv]
         elsif upper & 0x0F == 0x01 # BSR
-          [Instruction::BSR.new(Target::AddrDisplacement.new(displacement), size), mv]
+          # XXX: Not sure I understand this but I should always move PC by +2 and add
+          # displacement whether it's SHORT or WORD attribute...?
+          [Instruction::BSR.new(Target::AddrDisplacement.new(displacement), size), S_1WORD]
         else
           raise UnsupportedInstruction.new("Bcc 0x#{word.to_s(16)} not supported yet")
         end

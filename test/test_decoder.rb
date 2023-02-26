@@ -146,7 +146,7 @@ describe Decoder do
       expected = Instruction::BSR.new(Target::AddrDisplacement.new(0x1234), WORD_SIZE)
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
-      assert_equal 4, mv
+      assert_equal 2, mv
     end
 
     it "returns DBcc false, register d0, -6 for 0x51C8FFFA" do
