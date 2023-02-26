@@ -65,7 +65,7 @@ class Decoder
         else
           raise UnsupportedInstruction.new("Bcc 0x#{word.to_s(16)} not supported yet")
         end
-      when is_lea?(upper)
+      when is_lea?(word)
         if is_pc_with_displacement?(lower)
           next_word = memory.get_word(pc + S_1WORD)
           register = upper_An(upper)
@@ -86,6 +86,8 @@ class Decoder
         else
           raise UnsupportedInstruction.new("DBcc not DBF")
         end
+      when word == 0x4E75
+        [Instruction::RTS.new, S_1WORD] # the second param is ignored so it doesn't really matter
       else
         raise UnsupportedInstruction.new("cannot decode '0x#{word.to_s(16)}'")
     end
@@ -204,8 +206,8 @@ class Decoder
     reg
   end
 
-  def is_lea?(byte)
-    (byte & 0xF0) >> 4 == 0b0100
+  def is_lea?(word)
+    (word & 0xF1C0) == 0x41C0
   end
 
   def size_long?(byte)

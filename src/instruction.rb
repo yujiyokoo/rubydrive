@@ -43,4 +43,7 @@ class Instruction
   class DBcc < Struct.new('DBcc', :condition, :target, :displacement) do
     def initialize(condition, target, displacement) = super; end
   end
+
+  class RTS < Struct.new('RTS')
+  end
 end

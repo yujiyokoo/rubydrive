@@ -148,5 +148,12 @@ describe Decoder do
       assert_equal expected, instruction
       assert_equal 2, mv
     end
+
+    it "returns RTS for 0x4E75" do
+      memory = Memory.new(rom: Rom.new([0x4E, 0x75]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new)
+      expected = Instruction::RTS.new
+      instruction, _ = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+    end
   end
 end

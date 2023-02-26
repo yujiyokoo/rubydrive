@@ -11,7 +11,7 @@ require 'controller_io'
 require 'target'
 
 describe M68k do
-  let(:rom_contents) { [0xff, 0xff, 0x00, 0xfe, 0x00, 0x00, 0x00, 0x08, 0x4E, 0x71] }
+  let(:rom_contents) { [0x00, 0xff, 0x00, 0xfe, 0x00, 0x00, 0x00, 0x08, 0x4E, 0x71] }
   let(:rom) { Rom.new(rom_contents) }
   let(:memory) { Memory.new(rom: rom, controller_io: ControllerIO.new(0x00000000), ram: Ram.new) }
   let(:decoder) { Decoder.new }
@@ -22,8 +22,8 @@ describe M68k do
     end
 
     it 'sets SP to the first long word (which is a7 register)' do
-      assert_equal 0xffff00fe, M68k.new(memory, decoder).sp
-      assert_equal 0xffff00fe, M68k.new(memory, decoder).registers[:a7]
+      assert_equal 0x00ff00fe, M68k.new(memory, decoder).sp
+      assert_equal 0x00ff00fe, M68k.new(memory, decoder).registers[:a7]
     end
 
     it 'sets PC to the second long word' do
@@ -147,13 +147,17 @@ describe M68k do
     end
 
     describe 'BSR' do
-      it 'modifies PC by 0x98 (-104 in dec) (for 0x6198) and saves PC value in SP (a7)' do
+      it 'modifies PC by 0xFE (-2 in dec) (for 0x61FE) and saves PC value in SP (a7)' do
+        $debug = true
         m68k.pc = 0x02
         instruction = Instruction::BSR.new(Target::AddrDisplacement.new(0xFE), SHORT_SIZE)
         m68k.execute(instruction)
         assert_equal 0, m68k.pc
-        assert_equal 0x00000008, m68k.sp
+        assert_equal 0x00FF00FA, m68k.sp
+        assert_equal 0x02, memory.get_long_word(m68k.sp)
       end
+
+      #it 'modifies PC by X for 
     end
 
     describe 'DBcc' do
@@ -180,6 +184,18 @@ describe M68k do
         instruction = Instruction::LEA.new(Target::PcDisplacement.new(0x04), :a5)
         m68k.execute(instruction)
         assert_equal 0x107, m68k.registers[:a5]
+      end
+    end
+
+    describe 'RTS' do
+      it 'copies the stack value to the PC and increments SP by 4' do
+        m68k.pc = 0xFF
+        m68k.sp = 0xFFFFF0
+        m68k.memory.write_long_word(m68k.sp, 0x12345678)
+        instruction = Instruction::RTS.new
+        m68k.execute(instruction)
+        assert_equal 0x12345678, m68k.pc
+        assert_equal 0xFFFFF4, m68k.sp
       end
     end
 

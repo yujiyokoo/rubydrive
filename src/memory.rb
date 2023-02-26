@@ -86,7 +86,7 @@ class Memory
     elsif other_valid_addr?(addr)
       # Unimplemented stuff like TMSS
     else
-      raise InvalidAddress.new("Unsupported write to addr: #{addr}, size: #{size}, val: #{value}")
+      raise InvalidAddress.new("Unsupported write to addr: #{addr.to_s(16)}, size: #{size}, val: #{value}")
     end
   end
 end

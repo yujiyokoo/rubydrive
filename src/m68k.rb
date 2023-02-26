@@ -92,12 +92,13 @@ class M68k
         @pc += read_target(instruction, memory)
       end
     when 'Instruction::BSR'
-      mv = if instruction.target_size == WORD_SIZE
-        WORD_SIZE * 2
+      displacement_size = if instruction.target_size == WORD_SIZE
+        WORD_SIZE # the following word is used as displacement
       else
-        WORD_SIZE
+        0 # SHORT does not have a following param
       end
-      self.sp = memory.get_long_word(@pc + mv)
+      self.sp -= 4
+      memory.write_long_word(self.sp, @pc + displacement_size)
       @pc += read_target(instruction, memory)
     when 'Instruction::LEA'
       raise UnsupportedInstruction unless instruction.target.is_a?(Target::PcDisplacement)
@@ -133,6 +134,9 @@ class M68k
           @pc += instruction.displacement.value
         end
       end
+    when 'Instruction::RTS'
+      @pc = memory.get_long_word(self.sp)
+      self.sp += 4
     else
       raise UnsupportedInstruction.new(instruction.class.name)
     end
