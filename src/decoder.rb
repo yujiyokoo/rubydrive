@@ -66,10 +66,14 @@ class Decoder
           raise UnsupportedInstruction.new("Bcc 0x#{word.to_s(16)} not supported yet")
         end
       when is_lea?(word)
-        if is_pc_with_displacement?(lower)
+        if pc_with_displacement?(lower)
           next_word = memory.get_word(pc + S_1WORD)
           register = upper_An(upper)
           [Instruction::LEA.new(Target::PcDisplacement.new(next_word), register), S_2WORD]
+        elsif absolute_long?(lower)
+          next_word = memory.get_word(pc + S_1WORD)
+          register = upper_An(upper)
+          [Instruction::LEA.new(Target::AbsoluteLong.new(next_word), register), S_3WORD]
         else
           [:unknown, S_1WORD]
         end
@@ -192,8 +196,12 @@ class Decoder
     end
   end
 
-  def is_pc_with_displacement?(byte)
+  def pc_with_displacement?(byte)
     (byte & 0x3F) == 0x3A
+  end
+
+  def absolute_long?(byte)
+    (byte & 0x3F) == 0x39
   end
 
   def upper_An(byte)

@@ -109,6 +109,14 @@ describe Decoder do
       assert_equal 4, mv
     end
 
+    it "returns LEA, Absolute Long, into a3 for 47 F9 01 23" do
+      memory = Rom.new([0x47, 0xf9, 0x01, 0x23])
+      expected = Instruction::LEA.new(Target::AbsoluteLong.new(0x0123), :a3)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 4, mv
+    end
+
     it "returns STOP with WORD for 4e 72 27 00" do
       memory = Rom.new([0x4e, 0x72, 0x27, 0x00])
       expected = Instruction::STOP.new(0x2700)

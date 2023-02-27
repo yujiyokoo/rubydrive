@@ -97,10 +97,15 @@ class M68k
       memory.write_long_word(self.sp, @pc)
       @pc += read_target(instruction, memory)
     when 'Instruction::LEA'
-      raise UnsupportedInstruction unless instruction.target.is_a?(Target::PcDisplacement)
-
-      displacement = read_target(instruction, memory)
-      registers[instruction.destination] = pc + displacement
+      if instruction.target.is_a?(Target::PcDisplacement)
+        displacement = read_target(instruction, memory)
+        registers[instruction.destination] = pc + displacement
+      elsif instruction.target.is_a?(Target::AbsoluteLong)
+        registers[instruction.destination] = instruction.target.address
+      elsif instruction.target.is_a?(Target::AbsoluteLong)
+      else
+        raise UnsupportedInstruction
+      end
     when 'Instruction::STOP'
       @sr = instruction.value
       self.running = false

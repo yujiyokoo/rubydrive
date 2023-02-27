@@ -191,6 +191,13 @@ describe M68k do
         m68k.execute(instruction)
         assert_equal 0x107, m68k.registers[:a5]
       end
+
+      it 'loads the absolute long word into register' do
+        m68k.pc = 0x0
+        instruction = Instruction::LEA.new(Target::AbsoluteLong.new(0x01234567), :a3)
+        m68k.execute(instruction)
+        assert_equal 0x01234567, m68k.registers[:a3]
+      end
     end
 
     describe 'RTS' do
