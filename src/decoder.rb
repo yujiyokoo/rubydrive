@@ -69,7 +69,7 @@ class Decoder
         if pc_with_displacement?(lower)
           next_word = memory.get_word(pc + S_1WORD)
           register = upper_An(upper)
-          [Instruction::LEA.new(Target::PcDisplacement.new(next_word), register), S_2WORD]
+          [Instruction::LEA.new(Target::PcDisplacement.new(next_word), register), S_3WORD]
         elsif absolute_long?(lower)
           next_word = memory.get_word(pc + S_1WORD)
           register = upper_An(upper)

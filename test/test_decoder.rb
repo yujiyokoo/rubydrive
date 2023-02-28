@@ -98,7 +98,7 @@ describe Decoder do
       expected = Instruction::LEA.new(Target::PcDisplacement.new(0x34), :a5)
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
-      assert_equal 4, mv
+      assert_equal 6, mv
     end
 
     it "returns LEA, PC + PC(displacement), into a4 for 49 fa 00 34" do
@@ -106,7 +106,7 @@ describe Decoder do
       expected = Instruction::LEA.new(Target::PcDisplacement.new(0x34), :a4)
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
-      assert_equal 4, mv
+      assert_equal 6, mv
     end
 
     it "returns LEA, Absolute Long, into a3 for 47 F9 01 23" do
@@ -114,7 +114,7 @@ describe Decoder do
       expected = Instruction::LEA.new(Target::AbsoluteLong.new(0x0123), :a3)
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
-      assert_equal 4, mv
+      assert_equal 6, mv
     end
 
     it "returns STOP with WORD for 4e 72 27 00" do
