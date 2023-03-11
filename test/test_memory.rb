@@ -12,7 +12,8 @@ describe Memory do
     let(:rom) { Rom.new([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]) }
     let(:controller_io) { ControllerIO.new(0xFFFFFFFF) }
     let(:ram) { Ram.new }
-    let(:memory) { Memory.new(rom: rom, controller_io: controller_io, ram: ram) }
+    let(:tmss) { Tmss.new }
+    let(:memory) { Memory.new(rom: rom, controller_io: controller_io, ram: ram, tmss: tmss) }
 
     describe '#initialize' do
       it 'saves ROM, ControllerIO and RAM' do
@@ -23,7 +24,7 @@ describe Memory do
 
       it 'raises error if ROM is bigger than 0x3FFFFF' do
         assert_raises (RomSizeTooLarge) do
-          Memory.new(rom: Rom.new([0x00] * 0x400000), controller_io: controller_io, ram: ram)
+          Memory.new(rom: Rom.new([0x00] * 0x400000), controller_io: controller_io, ram: ram, tmss: Tmss.new)
         end
       end
     end

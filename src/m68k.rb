@@ -76,6 +76,16 @@ class M68k
         else
           raise UnsupportedInstruction.new("Unsupported: #{instruction}")
         end
+      elsif instruction.target.is_a?(Target::RegisterIndirect)
+        if instruction.destination.is_a?(Target::RegisterIndirect) && instruction.target_size == WORD_SIZE
+          source_w = memory.get_word(registers[instruction.target.name])
+          memory.write_word(registers[instruction.destination.name], source_w)
+          registers[instruction.destination.name] += instruction.target_size if instruction.destination.post_increment
+          registers[instruction.target.name] += instruction.target_size if instruction.target.post_increment
+          memory
+        else
+          raise UnsupportedInstruction.new("Unsupported: #{instruction}")
+        end
       else
         raise UnsupportedInstruction.new("Unsupported: #{instruction}")
       end
@@ -95,7 +105,9 @@ class M68k
     when 'Instruction::BSR'
       self.sp -= 4
       memory.write_long_word(self.sp, @pc)
-      @pc += read_target(instruction, memory)
+      # @pc contains "next instruction", so we should adjust here
+      displacement = (instruction.target_size - 1) * 2
+      @pc += read_target(instruction, memory) - displacement
     when 'Instruction::LEA'
       if instruction.target.is_a?(Target::PcDisplacement)
         displacement = read_target(instruction, memory)

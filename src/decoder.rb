@@ -59,9 +59,9 @@ class Decoder
         elsif upper & 0x0F == 0x07 # BNE
           [Instruction::BEQ.new(Target::AddrDisplacement.new(displacement), size), mv]
         elsif upper & 0x0F == 0x01 # BSR
-          # XXX: Not sure I understand this but I should always move PC by +2 and add
-          # displacement whether it's SHORT or WORD attribute...?
-          [Instruction::BSR.new(Target::AddrDisplacement.new(displacement), size), S_1WORD]
+          # For SHORT, it's part of instruction word. For WORD, it's next word
+          instruction_size = size * 2
+          [Instruction::BSR.new(Target::AddrDisplacement.new(displacement), size), instruction_size]
         else
           raise UnsupportedInstruction.new("Bcc 0x#{word.to_s(16)} not supported yet")
         end
@@ -71,7 +71,7 @@ class Decoder
           register = upper_An(upper)
           [Instruction::LEA.new(Target::PcDisplacement.new(next_word), register), S_3WORD]
         elsif absolute_long?(lower)
-          next_word = memory.get_word(pc + S_1WORD)
+          next_word = memory.get_long_word(pc + S_1WORD)
           register = upper_An(upper)
           [Instruction::LEA.new(Target::AbsoluteLong.new(next_word), register), S_3WORD]
         else
@@ -144,6 +144,8 @@ class Decoder
       [Target::AbsoluteLong.new(memory.get_long_word(pc + S_1WORD)), LONGWORD_SIZE]
     elsif mode == 0b111 && regnum == 0b000 # ABS short
       raise UnsupportedDestination.new("abs short")
+    elsif mode == 0b010 # (An) 3
+      [Target::RegisterIndirect.new(AREG_NAMES[regnum], false), 0]
     else
       raise UnsupportedDestination.new("unimplemented dest: #{mode.to_s(2).rjust(3, "0")}, #{regnum.to_s(2).rjust(3, "0")}")
     end
@@ -178,6 +180,8 @@ class Decoder
         raise UnsupportedSource
       end
       [Target::Immediate.new(immediate_val), size]
+    elsif mode == 0b011 # address with post increment
+      [Target::RegisterIndirect.new(AREG_NAMES[regnum], true), S_1WORD]
     else
       raise UnsupportedSource
     end

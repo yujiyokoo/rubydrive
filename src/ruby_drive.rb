@@ -21,9 +21,9 @@ class RubyDrive
     while m68k.running?
       debugpr "--"
       instruction, size = get_instruction
+      m68k.increment_pc(size)
       debugpr "instruction: #{instruction}"
       m68k.execute(instruction)
-      m68k.increment_pc(size)
     end
   end
 end
