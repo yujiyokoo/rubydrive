@@ -169,11 +169,11 @@ describe M68k do
         assert_equal 0x02, memory.get_long_word(m68k.sp)
       end
 
-      it 'modifies PC by 0x1234 (for 0x61001234) and saves PC value in (SP)' do
+      it 'modifies PC by 0x1234 (for 0x61001234) from *current* instruction (not current PC) and saves PC value in (SP)' do
         m68k.pc = 0x02
         instruction = Instruction::BSR.new(Target::AddrDisplacement.new(0x1234), WORD_SIZE)
         m68k.execute(instruction)
-        assert_equal 0x1236, m68k.pc
+        assert_equal 0x1234, m68k.pc
         assert_equal 0x00FF00FA, m68k.sp
         assert_equal 0x02, memory.get_long_word(m68k.sp)
       end
