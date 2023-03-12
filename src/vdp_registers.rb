@@ -12,9 +12,9 @@ class VdpRegisters
 
   def copy_long_word(addr, value)
     register_index = addr - 0xC00000
-    @registers[addr] = (value >> 24) & 0xFF
-    @registers[addr+1] = (value >> 16) & 0xFF
-    @registers[addr+2] = (value >> 8) & 0xFF
-    @registers[addr+3] = value & 0xFF
+    @registers[register_index] = (value >> 24) & 0xFF
+    @registers[register_index+1] = (value >> 16) & 0xFF
+    @registers[register_index+2] = (value >> 8) & 0xFF
+    @registers[register_index+3] = value & 0xFF
   end
 end
