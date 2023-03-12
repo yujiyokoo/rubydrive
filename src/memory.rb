@@ -97,7 +97,10 @@ class Memory
       tmss.copy_long_word(addr, value)
     elsif vdp_register_addr?(addr) && size == WORD_SIZE
       vdp.copy_word(addr, value)
+    elsif vdp_register_addr?(addr) && size == LONGWORD_SIZE
+      vdp.copy_long_word(addr, value)
     else
+      debugger
       # TODO: PSG & Debug. See https://segaretro.org/Sega_Mega_Drive/Memory_map
       raise InvalidAddress.new("Unsupported write to addr: #{addr.to_s(16)}, size: #{size}, val: #{value}")
     end

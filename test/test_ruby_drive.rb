@@ -9,8 +9,7 @@ describe RubyDrive do
       def running?
         running
       end
-      def increment_pc(size)
-      end
+      def increment_pc(size); end
       def execute(_instruction)
         raise "execute called"
       end

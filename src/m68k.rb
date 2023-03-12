@@ -73,6 +73,12 @@ class M68k
           memory.write_word(registers[instruction.destination.name], source_w)
           registers[instruction.destination.name] += instruction.target_size if instruction.destination.post_increment
           memory
+        elsif instruction.target_size == LONGWORD_SIZE && instruction.destination.is_a?(Target::RegisterIndirect)
+          raise UnsupportedInstruction.new("Unsupported: #{instruction}") if instruction.destination.post_increment
+          source_lw = instruction.target.value
+          dest_addr = registers[instruction.destination.name]
+          memory.write_long_word(dest_addr, source_lw)
+          memory
         else
           raise UnsupportedInstruction.new("Unsupported: #{instruction}")
         end
@@ -89,6 +95,7 @@ class M68k
       else
         raise UnsupportedInstruction.new("Unsupported: #{instruction}")
       end
+      # TODO: set condition codes (N, Z, V=0, C=0)?
     when 'Instruction::TST'
       value = read_target(instruction, memory)
       @sr = sr | 0x04 if value == 0
@@ -141,6 +148,8 @@ class M68k
         # fall through to next
         raise UnsupportedInstruction.new("Bcc true not implemented yet")
       else
+        puts "---- #{registers[instruction.target.name]} ----"
+        debugger if @pc >= 0x4a && registers[instruction.target.name] > 1000
         if registers[instruction.target.name] == -1
           @pc += WORD_SIZE
         else

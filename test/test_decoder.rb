@@ -75,6 +75,14 @@ describe Decoder do
       assert_equal 4, mv
     end
 
+    it "returns MOVE.l immediate long, :a3 indirect for 0x26BC" do
+      memory = Memory.new(rom: Rom.new([0x26, 0xBC, 0x76, 0x54, 0x32, 0x10]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new, tmss: Tmss.new)
+      expected = Instruction::MOVE.new(Target::Immediate.new(0x76543210), Target::RegisterIndirect.new(:a3, false), LONGWORD_SIZE)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 6, mv
+    end
+
     it "returns TST.l, absolute long for 4a b9 00 a1 00 08" do
       memory = Rom.new([0x4a, 0xb9, 0x00, 0xa1, 0x00, 0x08])
       tstl = Instruction::TST.new(Target::AbsoluteLong.new(0x00a10008), LONGWORD_SIZE)

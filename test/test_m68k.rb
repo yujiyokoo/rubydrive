@@ -101,6 +101,13 @@ describe M68k do
         assert_equal memory.get_long_word(m68k.registers[:a3]), 0xFFFF5678
         assert_equal 0x00FFFFF2, m68k.registers[:a5]
       end
+
+      it 'copies a long word for MOVE.l, immediate, addr reg indirect (0x26bc)' do
+        m68k.registers[:a3] = 0x0FFFFF0
+        instruction = Instruction::MOVE.new(Target::Immediate.new(0x76543210), Target::RegisterIndirect.new(:a3, false), LONGWORD_SIZE)
+        m68k.execute(instruction)
+        assert_equal 0x76543210, memory.get_long_word(m68k.registers[:a3])
+      end
     end
 
     describe 'TST' do
