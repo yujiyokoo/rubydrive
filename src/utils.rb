@@ -67,3 +67,12 @@ def to_word_signed(num)
   end
 end
 
+def signed_word_2s_complement(num)
+  raise RuntimeError.new("out of range: #{num}") if num > 32767 || num < -32768
+  if num >=0
+    num
+  else
+    16 ** 4 + num
+  end
+end
+

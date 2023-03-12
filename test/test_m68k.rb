@@ -202,6 +202,13 @@ describe M68k do
         m68k.execute(instruction)
         assert_equal 0x40, m68k.pc
       end
+
+      it 'treats Dn as a 16-bit value when subtracting 1' do
+        m68k.registers[:d3] = 0x12340000
+        instruction = Instruction::DBcc.new(Condition::False, Target::Register.new(:d3), Displacement.new(-6))
+        m68k.execute(instruction)
+        assert_equal 0x1234FFFF, m68k.registers[:d3]
+      end
     end
 
     describe 'LEA' do

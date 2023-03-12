@@ -143,12 +143,14 @@ class M68k
       z = (result == 0)
       @sr |= 0x00000008 if z
     when 'Instruction::DBcc'
-      registers[instruction.target.name] -= 1
+      # Must treat the register lower word as a 16-bit word
+      registers[instruction.target.name] = add_as_word(registers[instruction.target.name], -1)
       if instruction.condition.evaluate
         # fall through to next
         raise UnsupportedInstruction.new("Bcc true not implemented yet")
       else
-        if registers[instruction.target.name] == -1
+        # Must treat the register lower word as a 16-bit word
+        if lower_word(registers[instruction.target.name]) == -1
           @pc += WORD_SIZE
         else
           @pc += instruction.displacement.value
@@ -161,6 +163,12 @@ class M68k
       raise UnsupportedInstruction.new(instruction.class.name)
     end
   end
+
+  def add_as_word(a, b)
+    (a & 0xFFFF0000) | signed_word_2s_complement((a & 0xFFFF) + b)
+  end
+
+  def lower_word(val) = to_word_signed(val & 0xFFFF)
 
   def z_flag_on? = sr & 0x04 != 0
 
