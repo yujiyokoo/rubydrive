@@ -148,8 +148,6 @@ class M68k
         # fall through to next
         raise UnsupportedInstruction.new("Bcc true not implemented yet")
       else
-        puts "---- #{registers[instruction.target.name]} ----"
-        debugger if @pc >= 0x4a && registers[instruction.target.name] > 1000
         if registers[instruction.target.name] == -1
           @pc += WORD_SIZE
         else
