@@ -46,4 +46,7 @@ class Instruction
 
   class RTS < Struct.new('RTS')
   end
+
+  class SUBQ < Struct.new('SUBQ', :target, :destination, :target_size)
+  end
 end

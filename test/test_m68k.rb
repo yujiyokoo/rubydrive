@@ -283,6 +283,15 @@ describe M68k do
       end
     end
 
+    describe 'SUBQ' do
+      it 'subtracts immediate data from target for SUBQ.l' do
+        m68k.sp = 0x10000000 # sp is a7
+        instruction = Instruction::SUBQ.new(Target::Immediate.new(2), Target::Register.new(:a7), LONGWORD_SIZE)
+        m68k.execute(instruction)
+        assert_equal 0x0FFFFFFE, m68k.sp
+      end
+    end
+
     describe 'others' do
       it 'causes unsupported instruction error' do
         assert_raises(UnsupportedInstruction) do

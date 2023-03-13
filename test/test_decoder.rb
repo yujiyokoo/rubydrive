@@ -187,5 +187,13 @@ describe Decoder do
       instruction, _ = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
     end
+
+    it "returns SUBQ.l 2, register a7 for 558F" do
+      memory = Memory.new(rom: Rom.new([0x55, 0x8F]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new, tmss: Tmss.new)
+      expected = Instruction::SUBQ.new(Target::Immediate.new(2), Target::Register.new(:a7), LONGWORD_SIZE)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 2, mv
+    end
   end
 end

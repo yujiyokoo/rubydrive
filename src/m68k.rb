@@ -159,6 +159,12 @@ class M68k
     when 'Instruction::RTS'
       @pc = memory.get_long_word(self.sp)
       self.sp += 4
+    when 'Instruction::SUBQ'
+      if instruction.target.is_a?(Target::Immediate) && instruction.destination.is_a?(Target::Register) && instruction.target_size == LONGWORD_SIZE
+        registers[instruction.destination.name] -= instruction.target.value
+      else
+        raise UnsupportedInstruction.new(instruction)
+      end
     else
       raise UnsupportedInstruction.new(instruction.class.name)
     end

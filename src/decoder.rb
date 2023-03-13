@@ -92,11 +92,21 @@ class Decoder
         end
       when word == 0x4E75
         [Instruction::RTS.new, S_1WORD] # the second param is ignored so it doesn't really matter
+      when subq?(upper)
+        data = (upper & 0x0E) >> 1
+        source = Target::Immediate.new(data)
+        size = get_lower_size(lower)
+        dest, _ = get_lower_target(lower, memory, pc, size)
+        [Instruction::SUBQ.new(source, dest, size), S_1WORD]
       else
         raise UnsupportedInstruction.new("cannot decode '0x#{word.to_s(16)}'")
     end
 
     [instruction, adv]
+  end
+
+  def subq?(upper_byte)
+    upper_byte & 0xF1 == 0x51
   end
 
   def data_reg(num)
@@ -109,14 +119,14 @@ class Decoder
 
   def get_lower_size(lower_byte)
     case (lower_byte >> 6) & 0x03
-      when 0x00
+      when 0b00
         BYTE_SIZE
-      when 0x01
+      when 0b01
         WORD_SIZE
-      when 0x10
-        LONG_SIZE
+      when 0b10
+        LONGWORD_SIZE
       else
-        raise UnsupportedSize
+        raise InvalidSize
     end
   end
 
@@ -171,6 +181,8 @@ class Decoder
       [Target::AbsoluteLong.new(next_long_word), LONGWORD_SIZE]
     elsif mode == 0x00 && regnum == 0x0 # register d0
       [Target::Register.new(:d0), size]
+    elsif mode == 0x01
+      [Target::Register.new(AREG_NAMES[regnum]), size]
     elsif mode == 0b111 && regnum == 0b100 # immediate
       immediate_val = if size == LONGWORD_SIZE
         memory.get_long_word(pc + S_1WORD)
