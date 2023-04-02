@@ -154,8 +154,11 @@ class Decoder
       [Target::AbsoluteLong.new(memory.get_long_word(pc + S_1WORD)), LONGWORD_SIZE]
     elsif mode == 0b111 && regnum == 0b000 # ABS short
       raise UnsupportedDestination.new("abs short")
-    elsif mode == 0b010 # (An) 3
+    elsif mode == 0b010 # (An)
       [Target::RegisterIndirect.new(AREG_NAMES[regnum], false), 0]
+    elsif mode == 0b101 # Address with displacement
+      next_word = memory.get_word(pc + S_1WORD)
+      [Target::RegisterIndirectDisplacement.new(AREG_NAMES[regnum], next_word), 2]
     else
       raise UnsupportedDestination.new("unimplemented dest: #{mode.to_s(2).rjust(3, "0")}, #{regnum.to_s(2).rjust(3, "0")}")
     end

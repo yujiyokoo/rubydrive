@@ -16,4 +16,7 @@ class Target
 
   class RegisterIndirect < Struct.new('RegisterIndirect', :name, :post_increment)
   end
+
+  class RegisterIndirectDisplacement < Struct.new('RegisterIndirectDisplacement', :name, :displacement)
+  end
 end
