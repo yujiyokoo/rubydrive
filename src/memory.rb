@@ -30,9 +30,11 @@ class Memory
   end
 
   def get_byte(addr)
-    if addr <= 0x3FFFFF
+    if rom_addr?(addr)
       rom.get_byte(addr)
-    elsif 0xA10000 <= addr and addr <= 0xA1001F
+    elsif ram_addr?(addr)
+      ram.get_byte(addr)
+    elsif controller_io_addr?(addr)
       controller_io.get_byte(addr)
     else
       raise UnsupportedAddress
@@ -82,11 +84,17 @@ class Memory
     write_value(addr, WORD_SIZE, word)
   end
 
+  def write_byte(addr, byte)
+    write_value(addr, BYTE_SIZE, byte)
+  end
+
   def write_value(addr, size, value)
     if ram_addr?(addr) && size == LONGWORD_SIZE
       ram.copy_long_word(addr, value)
     elsif ram_addr?(addr) && size == WORD_SIZE
       ram.copy_word(addr, value)
+    elsif ram_addr?(addr) && size == BYTE_SIZE
+      ram.copy_byte(addr, value)
     elsif controller_io_addr?(addr) && size == LONGWORD_SIZE
       controller_io.copy_long_word(addr, value)
     elsif controller_io_addr?(addr) && size == WORD_SIZE

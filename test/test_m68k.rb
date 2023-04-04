@@ -108,6 +108,17 @@ describe M68k do
         m68k.execute(instruction)
         assert_equal 0x76543210, memory.get_long_word(m68k.registers[:a3])
       end
+
+      it 'copies a byte for MOVE.b register indirect, register indirect displacement (0x1f5d)' do
+        m68k.registers[:a5] = 0x0FFFFF0
+        memory.write_word(m68k.registers[:a5], 0x3210)
+        m68k.registers[:a7] = 0x0FFFF00
+        memory.write_long_word(m68k.registers[:a7], 0x01234567)
+        instruction = Instruction::MOVE.new(Target::RegisterIndirect.new(:a5, true), Target::RegisterIndirectDisplacement.new(:a7, 1), BYTE_SIZE)
+        m68k.execute(instruction)
+        assert_equal 0x0FFFFF1, m68k.registers[:a5]
+        assert_equal 0x01324567, memory.get_long_word(m68k.registers[:a7])
+      end
     end
 
     describe 'TST' do

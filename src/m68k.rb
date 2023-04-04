@@ -89,6 +89,12 @@ class M68k
           registers[instruction.destination.name] += instruction.target_size if instruction.destination.post_increment
           registers[instruction.target.name] += instruction.target_size if instruction.target.post_increment
           memory
+        elsif instruction.destination.is_a?(Target::RegisterIndirectDisplacement) && instruction.target_size == BYTE_SIZE
+          source_byte = memory.get_byte(registers[instruction.target.name])
+          displacement = instruction.destination.displacement
+          memory.write_byte(registers[instruction.destination.name] + displacement, source_byte)
+          registers[instruction.target.name] += instruction.target_size if instruction.target.post_increment
+          memory
         else
           raise UnsupportedInstruction.new("Unsupported: #{instruction}")
         end
