@@ -72,7 +72,7 @@ describe Decoder do
       expected = Instruction::MOVE.new(Target::RegisterIndirect.new(:a5, true), Target::RegisterIndirect.new(:a3, false), WORD_SIZE)
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
-      assert_equal 4, mv
+      assert_equal 2, mv
     end
 
     it "returns MOVE.l immediate long, :a3 indirect for 0x26BC" do
@@ -81,6 +81,14 @@ describe Decoder do
       instruction, mv = decoder.get_instruction(memory, 0)
       assert_equal expected, instruction
       assert_equal 6, mv
+    end
+
+    it "returns MOVE.b register indirect displacemnt for 0x1F5D" do
+      memory = Memory.new(rom: Rom.new([0x1F, 0x5D, 0x00, 0x06, 0x00, 0x00]), controller_io: ControllerIO.new(0xFFFFFFFF), ram: Ram.new, tmss: Tmss.new)
+      expected = Instruction::MOVE.new(Target::RegisterIndirect.new(:a5, true), Target::RegisterIndirectDisplacement.new(:a7, 6), BYTE_SIZE)
+      instruction, mv = decoder.get_instruction(memory, 0)
+      assert_equal expected, instruction
+      assert_equal 4, mv
     end
 
     it "returns TST.l, absolute long for 4a b9 00 a1 00 08" do

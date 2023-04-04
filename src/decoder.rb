@@ -196,7 +196,7 @@ class Decoder
       end
       [Target::Immediate.new(immediate_val), size]
     elsif mode == 0b011 # address with post increment
-      [Target::RegisterIndirect.new(AREG_NAMES[regnum], true), S_1WORD]
+      [Target::RegisterIndirect.new(AREG_NAMES[regnum], true), 0]
     else
       raise UnsupportedSource
     end
